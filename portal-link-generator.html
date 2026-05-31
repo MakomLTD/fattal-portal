@@ -284,7 +284,7 @@
     <div class="card" style="margin-top:16px">
       <h2><span>🔁</span> חיבור ל-Google Apps Script עם Push (clasp)</h2>
       <p style="margin:8px 0 12px;color:var(--muted);font-size:13px">
-        אופציונלי: אם רוצים לעבוד מה-Repo ולעשות Push ישיר ל-Apps Script.
+        אופציונלי: אם רוצים לעבוד מה-Repo ולעשות Push ישיר ל-Apps Script עם מיפוי אוטומטי ל-<code>index.html</code>.
       </p>
       <div class="field">
         <label>Script ID של פרויקט ה-Apps Script</label>
@@ -425,7 +425,10 @@
     document.getElementById('claspPushCmd').textContent =
 `npm i -g @google/clasp
 clasp login
-echo '{"scriptId":"${scriptId}","rootDir":"."}' > .clasp.json
+mkdir -p .apps-script-push
+cp Code.gs .apps-script-push/Code.gs
+cp google-sites-apps-script-index.html .apps-script-push/index.html
+echo '{"scriptId":"${scriptId}","rootDir":".apps-script-push"}' > .clasp.json
 clasp push`;
   }
 
