@@ -49,7 +49,7 @@
     .section-head h2{font-size:36px;line-height:1.15;font-weight:900}
     .section-head p{color:#5C667A;max-width:700px;font-size:17px}
     .projects-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
-    .project-card{background:var(--card);border-radius:16px;overflow:hidden;box-shadow:0 12px 30px rgba(17,25,63,.09);border:1px solid rgba(231,234,240,.95);transition:.25s ease;cursor:pointer;position:relative}
+    .project-card{background:var(--card);border-radius:16px;overflow:hidden;box-shadow:0 12px 30px rgba(17,25,63,.09);border:1px solid rgba(231,234,240,.95);transition:.25s ease;position:relative}
     .project-card:after{content:"";position:absolute;inset:0 auto 0 0;width:5px;background:var(--yellow);opacity:.95}
     .project-card:hover{transform:translateY(-5px);box-shadow:0 24px 55px rgba(17,25,63,.18)}
     .project-image{height:186px;background-size:cover;background-position:center;position:relative;overflow:hidden}
@@ -80,6 +80,13 @@
     .countdown.overdue .countdown-value{color:var(--red)}
     .sheet-status{display:none}
     .filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:0 0 18px}
+    .project-controls{display:grid;grid-template-columns:minmax(260px,1fr) auto;gap:12px;align-items:center;margin:0 0 14px}
+    .project-search{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;background:white;border:1px solid var(--line);border-radius:14px;padding:10px 12px;box-shadow:0 8px 20px rgba(17,25,63,.06)}
+    .project-search span{font-weight:900;color:var(--yellow);font-size:18px}
+    .project-search input{border:0;outline:0;background:transparent;font:inherit;font-size:16px;color:var(--navy);min-width:0}
+    .project-search input::placeholder{color:#8992A6}
+    .search-clear{border:0;background:#F3F5F9;color:#536078;border-radius:10px;padding:8px 12px;font-weight:900;font-family:inherit;cursor:pointer}
+    .search-count{color:#596579;font-size:13px;font-weight:800;background:white;border:1px solid var(--line);border-radius:999px;padding:9px 14px;white-space:nowrap}
     .filter-btn,.map-refresh{border:1px solid #D9DFEA;background:white;color:var(--ink);border-radius:10px;padding:10px 16px;font-weight:900;font-family:inherit;cursor:pointer;box-shadow:0 6px 16px rgba(17,25,63,.05);transition:.2s ease;min-height:40px}
     .filter-btn:hover,.filter-btn.active{background:var(--navy);border-color:var(--navy);color:white;box-shadow:0 10px 24px rgba(17,25,63,.14)}
     .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--navy);border-radius:12px;background:var(--navy);color:#fff;font-weight:900;padding:13px 18px;cursor:pointer;transition:.2s ease;min-height:48px;box-shadow:0 10px 22px rgba(17,25,63,.12)}
@@ -109,24 +116,6 @@
     .pin-marker span{transform:rotate(45deg);font-weight:900;color:var(--navy);font-size:12px}
     .leaflet-popup-content-wrapper{border-radius:16px;box-shadow:0 18px 40px rgba(17,25,63,.22)}
     .leaflet-popup-content{font-family:'Noto Sans Hebrew','Segoe UI',Arial,sans-serif}
-    .project-dialog{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(17,25,63,.72);z-index:5000;padding:22px}
-    .project-dialog.open{display:flex}
-    .dialog-card{width:min(920px,100%);max-height:92vh;overflow:auto;background:white;border-radius:18px;box-shadow:0 30px 90px rgba(0,0,0,.32);border:1px solid rgba(255,255,255,.35)}
-    .dialog-cover{height:230px;background-size:cover;background-position:center;position:relative}
-    .dialog-cover:after{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(17,25,63,.88),rgba(17,25,63,.25))}
-    .dialog-close{position:absolute;top:16px;left:16px;z-index:1;border:0;background:white;color:var(--navy);width:42px;height:42px;border-radius:50%;font-size:24px;line-height:1;cursor:pointer;box-shadow:0 10px 24px rgba(0,0,0,.18)}
-    .dialog-title{position:absolute;right:24px;bottom:24px;z-index:1;color:white}
-    .dialog-title h3{font-size:34px;line-height:1.1;margin-bottom:8px}
-    .dialog-title span{display:inline-flex;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);border-radius:999px;padding:7px 13px;font-weight:800}
-    .dialog-body{padding:24px}
-    .dialog-body p{color:#4E596D;margin-bottom:18px}
-    .dialog-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
-    .dialog-detail{background:#F8FAFC;border:1px solid var(--line);border-radius:14px;padding:14px}
-    .dialog-detail strong{display:block;font-size:16px;color:var(--navy)}
-    .dialog-detail span{font-size:12px;color:var(--muted)}
-    .dialog-actions{display:flex;gap:10px;flex-wrap:wrap}
-    .dialog-actions .btn{min-width:180px}
-    .dialog-back{background:#F8FAFC;color:var(--navy);border-color:#D9DFEA}
     .hidden{display:none!important}
     .site-footer{display:none}
     .site-footer strong{color:#5B6FE8}
@@ -169,6 +158,10 @@
       .section-head p{font-size:17px}
       .refresh-bar{width:100%;border-radius:16px;flex-wrap:wrap;justify-content:space-between;font-size:14px;padding:12px 14px}
       .filters{display:grid;grid-template-columns:1fr 1fr;width:100%;gap:8px}
+      .project-controls{grid-template-columns:1fr}
+      .project-search{border-radius:16px;padding:12px 14px}
+      .project-search input{font-size:16px}
+      .search-count{width:100%;border-radius:14px;text-align:center}
       .filter-btn,.map-refresh{min-height:50px;padding:12px 10px;font-size:15px;border-radius:14px}
       .project-card:hover{transform:none}
       .project-card{display:block;border-radius:20px}
@@ -200,21 +193,6 @@
       .map-tools{display:grid;grid-template-columns:1fr;gap:8px}
       .map-tools .filters{grid-template-columns:1fr 1fr}
       .site-footer{width:100%;border-radius:16px;text-align:center;font-size:14px}
-      .project-dialog{padding:10px;align-items:flex-end}
-      .dialog-card{width:100%;max-height:94vh;border-radius:18px}
-      .dialog-cover{height:210px}
-      .dialog-close{top:12px;left:12px;width:44px;height:44px;font-size:28px}
-      .dialog-title{right:18px;bottom:18px}
-      .dialog-title h3{font-size:28px;line-height:1.18}
-      .dialog-title span{font-size:14px;padding:7px 12px}
-      .dialog-body{padding:18px}
-      .dialog-body p{font-size:16px;line-height:1.65}
-      .dialog-grid{grid-template-columns:1fr;gap:10px}
-      .dialog-detail{display:grid;grid-template-columns:1fr auto;align-items:center;padding:14px;border-radius:16px}
-      .dialog-detail strong{font-size:17px}
-      .dialog-detail span{font-size:13px}
-      .dialog-actions{display:grid;grid-template-columns:1fr;gap:10px}
-      .dialog-actions .btn{min-width:0;width:100%}
     }
     @media(max-width:380px){
       h1{font-size:30px}
@@ -240,6 +218,10 @@
     .phone-ui .section-head p{font-size:17px}
     .phone-ui .refresh-bar{width:100%;border-radius:16px;flex-wrap:wrap;justify-content:space-between;font-size:14px;padding:12px 14px}
     .phone-ui .filters{display:grid;grid-template-columns:1fr 1fr;width:100%;gap:8px}
+    .phone-ui .project-controls{grid-template-columns:1fr}
+    .phone-ui .project-search{border-radius:16px;padding:12px 14px}
+    .phone-ui .project-search input{font-size:16px}
+    .phone-ui .search-count{width:100%;border-radius:14px;text-align:center}
     .phone-ui .filter-btn,.phone-ui .map-refresh{min-height:50px;padding:12px 10px;font-size:15px;border-radius:14px}
     .phone-ui .projects-grid,.phone-ui .map-shell{grid-template-columns:1fr}
     .phone-ui .project-card{display:block;border-radius:20px}
@@ -271,21 +253,6 @@
     .phone-ui .map-tools{display:grid;grid-template-columns:1fr;gap:8px}
     .phone-ui .map-tools .filters{grid-template-columns:1fr 1fr}
     .phone-ui .site-footer{width:100%;border-radius:16px;text-align:center;font-size:14px}
-    .phone-ui .project-dialog{padding:10px;align-items:flex-end}
-    .phone-ui .dialog-card{width:100%;max-height:94vh;border-radius:18px}
-    .phone-ui .dialog-cover{height:210px}
-    .phone-ui .dialog-close{top:12px;left:12px;width:44px;height:44px;font-size:28px}
-    .phone-ui .dialog-title{right:18px;bottom:18px}
-    .phone-ui .dialog-title h3{font-size:28px;line-height:1.18}
-    .phone-ui .dialog-title span{font-size:14px;padding:7px 12px}
-    .phone-ui .dialog-body{padding:18px}
-    .phone-ui .dialog-body p{font-size:16px;line-height:1.65}
-    .phone-ui .dialog-grid{grid-template-columns:1fr;gap:10px}
-    .phone-ui .dialog-detail{display:grid;grid-template-columns:1fr auto;align-items:center;padding:14px;border-radius:16px}
-    .phone-ui .dialog-detail strong{font-size:17px}
-    .phone-ui .dialog-detail span{font-size:13px}
-    .phone-ui .dialog-actions{display:grid;grid-template-columns:1fr;gap:10px}
-    .phone-ui .dialog-actions .btn{min-width:0;width:100%}
   </style>
 </head>
 <body>
@@ -329,9 +296,17 @@
     <section id="projects">
       <div class="section-head">
         <div>
-          <h2>בחירת פרויקט לניהול</h2>
-          <p>לחיצה על כרטיס פותחת תקציר פרויקט עם פעולות ניהול ותיעוד.</p>
+          <h2>פרויקטים פעילים</h2>
+          <p>כל פרויקט מוצג ככרטיס עבודה ברור עם חיפוש, מיקום וכניסה לאתר הניהול בחלון חדש.</p>
         </div>
+      </div>
+      <div class="project-controls">
+        <label class="project-search" for="projectSearch">
+          <span aria-hidden="true">⌕</span>
+          <input id="projectSearch" type="search" placeholder="חיפוש לפי פרויקט, אזור או סטטוס" autocomplete="off" oninput="setProjectSearch(this.value)" />
+          <button class="search-clear" type="button" onclick="clearProjectSearch(event)">נקה</button>
+        </label>
+        <div class="search-count" id="projectSearchCount">מציג את כל הפרויקטים</div>
       </div>
       <div class="refresh-bar">
         <span class="refresh-dot" id="refreshDot"></span>
@@ -366,36 +341,6 @@
     <footer class="site-footer"><span>מופעל על ידי <strong>MAKOM LTD</strong></span></footer>
   </main>
 
-  <div class="project-dialog" id="projectDialog" aria-hidden="true">
-    <div class="dialog-card" role="dialog" aria-modal="true" aria-labelledby="dialogProjectName">
-      <div class="dialog-cover" id="dialogCover">
-        <button class="dialog-close" type="button" onclick="closeProjectDialog()" aria-label="סגירה">×</button>
-        <div class="dialog-title">
-          <h3 id="dialogProjectName"></h3>
-          <span id="dialogProjectStatus"></span>
-        </div>
-      </div>
-      <div class="dialog-body">
-        <p id="dialogProjectDesc"></p>
-        <div class="dialog-grid">
-          <div class="dialog-detail"><strong id="dialogLocation"></strong><span>מיקום</span></div>
-          <div class="dialog-detail"><strong id="dialogPlannedEndDate"></strong><span>סיום מתוכנן</span></div>
-          <div class="dialog-detail"><strong id="dialogActualEndDate"></strong><span>סיום בפועל</span></div>
-        </div>
-        <div class="countdown" id="dialogCountdown" data-end-date="">
-          <span class="stopwatch" aria-hidden="true"></span>
-          <span class="countdown-label">נותר עד סיום בפועל</span>
-          <strong class="countdown-value">--:--:--</strong>
-        </div>
-        <div class="dialog-actions">
-          <button class="btn dialog-back" type="button" onclick="closeProjectDialog()">חזרה לפרויקטים</button>
-          <a class="btn" id="dialogSiteLink" href="#" target="_blank" rel="noopener">כניסה לאתר הניהול</a>
-          <button class="btn btn-light" type="button" id="dialogMapButton">הצגה במפה</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
     function scrollToSection(id){ const el=document.getElementById(id); if(el) el.scrollIntoView({behavior:'smooth',block:'start'}); }
@@ -424,7 +369,7 @@
 
     function showAppError(msg){ const el=document.getElementById('appError'); if(el){ el.textContent=msg; el.classList.add('open'); } }
 
-    let projects=[], activeStatusFilter='all', mapStatusFilter='all', map, mapMarkers=[];
+    let projects=[], activeStatusFilter='all', mapStatusFilter='all', projectSearchTerm='', map, mapMarkers=[];
 
     function escapeHTML(v){ return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])); }
     function isValidLink(v){ return v && v!=='#'; }
@@ -481,9 +426,39 @@
     }
 
     function updateCountdowns(){ document.querySelectorAll('[data-end-date]').forEach(el=>{ const d=countdownText(el.dataset.endDate); el.classList.toggle('overdue',d.overdue); el.querySelector('.countdown-label').innerText=d.label; el.querySelector('.countdown-value').innerHTML=d.value; }); }
+
+    function normalizeSearchValue(value){
+      return String(value||'')
+        .normalize('NFKD')
+        .replace(/[\u0591-\u05C7]/g,'')
+        .replace(/\s+/g,' ')
+        .trim()
+        .toLowerCase();
+    }
+    function projectSearchText(p){
+      return normalizeSearchValue([p.name,p.location,p.status,p.desc,p.plannedEndDate,p.actualEndDate,...(p.tags||[])].join(' '));
+    }
+    function filteredProjects(source=projects,status=activeStatusFilter){
+      const q=normalizeSearchValue(projectSearchTerm);
+      return source.filter(p=>(status==='all'||p.status===status)&&(!q||projectSearchText(p).includes(q)));
+    }
+    function updateSearchCount(count,total){
+      const el=document.getElementById('projectSearchCount');
+      if(!el) return;
+      el.textContent=projectSearchTerm.trim()?`מציג ${count} מתוך ${total}`:`מציג ${count} פרויקטים`;
+    }
+    function setProjectSearch(value){ projectSearchTerm=String(value||''); renderProjects(); }
+    function clearProjectSearch(event){
+      if(event) event.preventDefault();
+      projectSearchTerm='';
+      const input=document.getElementById('projectSearch');
+      if(input) input.value='';
+      renderProjects();
+    }
+
     function cardTemplate(p,i){
       const se=String(p.actualEndDate||'').replace(/"/g,'&quot;');
-      return `<article class="project-card" onclick="openProject(${i})">
+      return `<article class="project-card">
         <div class="project-image" style="background-image:url('${escapeHTML(p.image)}')">
           <div class="status-badge">${escapeHTML(p.badge)}</div>
           <div class="project-status-line">סטטוס: ${escapeHTML(p.status)}</div>
@@ -506,7 +481,7 @@
             <strong class="countdown-value">--:--:--</strong>
           </div>
           <div class="card-actions">
-            <button class="btn btn-light full" type="button">פרטי הפרויקט</button>
+            <button class="btn btn-light full" type="button" onclick="focusProjectOnMap(${i},event)">הצגה במפה</button>
             <a class="btn full" href="${escapeHTML(p.link)}" target="_blank" rel="noopener" onclick="openExternalSite(this.href,event)">אתר הניהול</a>
           </div>
         </div>
@@ -514,7 +489,7 @@
     }
 
     function renderProjects(){
-      const vis=activeStatusFilter==='all'?projects:projects.filter(p=>p.status===activeStatusFilter);
+      const vis=filteredProjects();
       const statuses=[...new Set(projects.map(p=>p.status).filter(Boolean))];
       document.getElementById('statusFilters').innerHTML=[
         `<button class="filter-btn ${activeStatusFilter==='all'?'active':''}" type="button" onclick="setStatusFilter('all')">כל הפרויקטים</button>`,
@@ -523,34 +498,12 @@
       document.getElementById('projectCards').innerHTML=projects.length
         ?(vis.length?vis.map(p=>cardTemplate(p,projects.indexOf(p))).join(''):`<div style="grid-column:1/-1;text-align:center;padding:40px"><h2>אין פרויקטים בסטטוס זה</h2></div>`)
         :`<div style="grid-column:1/-1;text-align:center;padding:40px"><h2>לא נמצאו פרויקטים</h2></div>`;
+      updateSearchCount(vis.length,projects.length);
       updateCountdowns();
       renderMap();
     }
 
     function setStatusFilter(s){ activeStatusFilter=s; renderProjects(); }
-
-    function openProject(i){
-      const p=projects[i]; if(!p) return;
-      document.getElementById('dialogProjectName').innerText=p.name;
-      document.getElementById('dialogProjectStatus').innerText=p.status||'-';
-      document.getElementById('dialogProjectDesc').innerText=p.desc||'';
-      document.getElementById('dialogLocation').innerText=p.location||'-';
-      document.getElementById('dialogPlannedEndDate').innerText=p.plannedEndDate||'-';
-      document.getElementById('dialogActualEndDate').innerText=p.actualEndDate||'-';
-      document.getElementById('dialogCover').style.backgroundImage=`url('${p.image}')`;
-      document.getElementById('dialogCountdown').dataset.endDate=p.actualEndDate||'';
-      const sl=document.getElementById('dialogSiteLink');
-      sl.href=isValidLink(p.link)?p.link:'#';
-      sl.onclick=e=>openExternalSite(p.link,e);
-      sl.classList.toggle('hidden',!isValidLink(p.link));
-      document.getElementById('dialogMapButton').onclick=()=>{ closeProjectDialog(); scrollToSection('map'); setTimeout(()=>focusProjectOnMap(i),350); };
-      document.getElementById('projectDialog').classList.add('open');
-      document.getElementById('projectDialog').setAttribute('aria-hidden','false');
-      document.body.style.overflow='hidden';
-      updateCountdowns();
-    }
-
-    function closeProjectDialog(){ document.getElementById('projectDialog').classList.remove('open'); document.getElementById('projectDialog').setAttribute('aria-hidden','true'); document.body.style.overflow=''; }
 
     function renderMap(){
       if(!map){ map=L.map('projects-map',{scrollWheelZoom:false}).setView([31.75,35.05],8); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:18}).addTo(map); }
@@ -560,18 +513,18 @@
         `<button class="filter-btn ${mapStatusFilter==='all'?'active':''}" type="button" onclick="setMapStatusFilter('all')">הכל</button>`,
         ...statuses.map(s=>`<button class="filter-btn ${mapStatusFilter===s?'active':''}" type="button" onclick="setMapStatusFilter('${escapeHTML(s)}')">${escapeHTML(s)}</button>`)
       ].join('');
-      const mp=mapStatusFilter==='all'?projects:projects.filter(p=>p.status===mapStatusFilter);
+      const mp=filteredProjects(projects,mapStatusFilter);
       const vp=mp.filter(p=>Number.isFinite(p.lat)&&Number.isFinite(p.lng));
       document.getElementById('mapProjectList').innerHTML=vp.length
         ?vp.map(p=>`<button class="map-project" type="button" onclick="focusProjectOnMap(${projects.indexOf(p)})"><strong>${escapeHTML(p.name)}</strong><span>${escapeHTML(p.location||'מיקום לא הוגדר')} · מתוכנן ${escapeHTML(p.plannedEndDate||'-')}</span></button>`).join('')
         :'<p>אין פרויקטים עם קואורדינטות תקינות.</p>';
-      vp.forEach(p=>{ const pi=projects.indexOf(p); const mk=L.marker([p.lat,p.lng],{icon:L.divIcon({className:'',html:`<div class="pin-marker"><span>${pi+1}</span></div>`,iconSize:[34,34],iconAnchor:[17,34],popupAnchor:[0,-30]})}).addTo(map); mk.bindPopup(`<div style="direction:rtl;text-align:right;min-width:210px"><strong>${escapeHTML(p.name)}</strong><br>${escapeHTML(p.location)}<br>סטטוס: ${escapeHTML(p.status)}<br>סיום מתוכנן: ${escapeHTML(p.plannedEndDate||'-')}<br><button onclick="openProject(${pi})" style="margin-top:10px;border:0;background:#11193F;color:white;border-radius:10px;padding:8px 12px;cursor:pointer">פרטי הפרויקט</button></div>`); mapMarkers.push(mk); });
+      vp.forEach(p=>{ const pi=projects.indexOf(p); const mk=L.marker([p.lat,p.lng],{icon:L.divIcon({className:'',html:`<div class="pin-marker"><span>${pi+1}</span></div>`,iconSize:[34,34],iconAnchor:[17,34],popupAnchor:[0,-30]})}).addTo(map); mk.bindPopup(`<div style="direction:rtl;text-align:right;min-width:210px"><strong>${escapeHTML(p.name)}</strong><br>${escapeHTML(p.location)}<br>סטטוס: ${escapeHTML(p.status)}<br>סיום מתוכנן: ${escapeHTML(p.plannedEndDate||'-')}<br><a href="${escapeHTML(p.link)}" target="_blank" rel="noopener" style="display:inline-block;margin-top:10px;border:0;background:#11193F;color:white;border-radius:10px;padding:8px 12px;text-decoration:none">כניסה לאתר</a></div>`); mapMarkers.push(mk); });
       if(vp.length){ try{ map.fitBounds(L.latLngBounds(vp.map(p=>[p.lat,p.lng])).pad(.25)); }catch(e){} }
       setTimeout(()=>map.invalidateSize(),300);
     }
 
     function refreshMapView(){ renderMap(); if(map) map.invalidateSize(); }
-    function focusProjectOnMap(index){ const p=projects[index]; const mk=mapMarkers.find(m=>{ const pos=m.getLatLng(); return pos.lat===p.lat&&pos.lng===p.lng; }); if(map&&p&&Number.isFinite(p.lat)&&Number.isFinite(p.lng)){ map.setView([p.lat,p.lng],13,{animate:true}); if(mk) mk.openPopup(); } }
+    function focusProjectOnMap(index,event){ if(event){event.preventDefault();event.stopPropagation();} const p=projects[index]; if(!p) return; scrollToSection('map'); const mk=mapMarkers.find(m=>{ const pos=m.getLatLng(); return pos.lat===p.lat&&pos.lng===p.lng; }); if(map&&Number.isFinite(p.lat)&&Number.isFinite(p.lng)){ setTimeout(()=>{ map.setView([p.lat,p.lng],13,{animate:true}); if(mk) mk.openPopup(); },250); } }
     function setMapStatusFilter(s){ mapStatusFilter=s; renderMap(); }
 
     let _rt=null;
@@ -609,8 +562,6 @@
     window.addEventListener('error',e=>showAppError('שגיאה: '+(e.message||'בדקו את פריסת Apps Script')));
     loadProjects().catch(e=>{ console.error(e); showAppError('שגיאה בטעינה.'); projects=[]; renderProjects(); });
     setInterval(updateCountdowns,1000);
-    document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeProjectDialog(); });
-    document.getElementById('projectDialog').addEventListener('click',e=>{ if(e.target.id==='projectDialog') closeProjectDialog(); });
   </script>
 </body>
 </html>
