@@ -16,6 +16,14 @@ const MANAGER_EDITABLE_FIELDS = [
   'active','project_name','status','description','site_url','youtube_url','image_url',
   'location','lat','lng','planned_end_date','actual_end_date','tags','risk','next_step'
 ];
+const MANAGER_EDITABLE_FIELD_SET = MANAGER_EDITABLE_FIELDS.reduce(function(acc, field) {
+  acc[field] = true;
+  return acc;
+}, {});
+const LAT_MIN = -90;
+const LAT_MAX = 90;
+const LNG_MIN = -180;
+const LNG_MAX = 180;
 
 // קורא SPREADSHEET_ID מ-Script Properties (נשמר על-ידי fullSetup)
 function getSpreadsheetId_() {
@@ -59,8 +67,7 @@ function doGet(e) {
       configData: encodeTemplateData_({
       scriptUrl: ScriptApp.getService().getUrl(),
       clientId: params.client || '',
-      tokenId: params.token || '',
-      managerKey: params.manager_key || params.managerKey || ''
+      tokenId: params.token || ''
       })
     });
 
@@ -223,7 +230,7 @@ function updateProjectByManager_(payload) {
   const ignoredFields = [];
 
   Object.keys(updates).forEach(function(field) {
-    if (MANAGER_EDITABLE_FIELDS.indexOf(field) === -1) {
+    if (!MANAGER_EDITABLE_FIELD_SET[field]) {
       ignoredFields.push(field);
       return;
     }
@@ -288,8 +295,11 @@ function getManagerKey_() {
 
 function setManagerKey(key) {
   const normalized = String(key || '').trim();
-  if (normalized.length < 16) {
-    throw new Error('Manager Key חייב להיות באורך מינימלי של 16 תווים');
+  if (normalized.length < 32) {
+    throw new Error('Manager Key חייב להיות באורך מינימלי של 32 תווים');
+  }
+  if (!/[a-z]/.test(normalized) || !/[A-Z]/.test(normalized) || !/[0-9]/.test(normalized)) {
+    throw new Error('Manager Key חייב לכלול אות קטנה, אות גדולה ומספר');
   }
   PropertiesService.getScriptProperties().setProperty('MANAGER_KEY', normalized);
 }
@@ -297,15 +307,26 @@ function setManagerKey(key) {
 function isManagerAuthorized_(params) {
   const configured = getManagerKey_();
   const provided = String((params && (params.manager_key || params.managerKey)) || '').trim();
-  return !!configured && !!provided && configured === provided;
+  return !!configured && !!provided && timingSafeEqual_(configured, provided);
+}
+
+function timingSafeEqual_(left, right) {
+  const a = String(left || '');
+  const b = String(right || '');
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) {
+    diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return diff === 0;
 }
 
 function normalizeUpdateValue_(field, value) {
   if (field === 'lat' || field === 'lng') {
     const num = Number(value);
     if (!Number.isFinite(num)) return '';
-    if (field === 'lat' && (num < -90 || num > 90)) return '';
-    if (field === 'lng' && (num < -180 || num > 180)) return '';
+    if (field === 'lat' && (num < LAT_MIN || num > LAT_MAX)) return '';
+    if (field === 'lng' && (num < LNG_MIN || num > LNG_MAX)) return '';
     return String(num);
   }
   if (field === 'active') {

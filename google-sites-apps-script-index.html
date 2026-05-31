@@ -309,13 +309,21 @@
 
     const _DATA      = document.getElementById('portal-template-data');
     const _CFG       = decodeTemplateData(_DATA && _DATA.dataset.config, {});
+    const _PARAMS    = new URLSearchParams(window.location.search || '');
     const SCRIPT_URL = _CFG.scriptUrl || '';
     const CLIENT_ID  = _CFG.clientId  || '';
     const TOKEN_ID   = _CFG.tokenId   || '';
-    const MANAGER_KEY = _CFG.managerKey || '';
+    const MANAGER_KEY = _PARAMS.get('manager_key') || _PARAMS.get('managerKey') || '';
     const REFRESH_MS = 5 * 60 * 1000;
 
     const PROJECTS_FROM_SHEET = decodeTemplateData(_DATA && _DATA.dataset.projects, []);
+    if (MANAGER_KEY) {
+      _PARAMS.delete('manager_key');
+      _PARAMS.delete('managerKey');
+      const cleanQuery = _PARAMS.toString();
+      const cleanUrl = window.location.pathname + (cleanQuery ? '?' + cleanQuery : '') + window.location.hash;
+      window.history.replaceState({}, document.title, cleanUrl);
+    }
 
     function showAppError(msg){ const el=document.getElementById('appError'); if(el){ el.textContent=msg; el.classList.add('open'); } }
 
@@ -594,7 +602,7 @@
         await loadManagerProjects();
       }catch(e){
         console.error(e);
-        setManagerStatus('שמירה נכשלה');
+        setManagerStatus('שמירה נכשלה: ' + (e && e.message ? e.message : ''));
       }
     }
 
