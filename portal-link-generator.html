@@ -425,15 +425,14 @@
     document.getElementById('claspPushCmd').textContent =
 `npm i -g @google/clasp
 clasp login
-test -f Code.gs || { echo 'Error: Code.gs not found. Make sure it exists in the repository root before running clasp push.'; exit 1; }
-test -f google-sites-apps-script-index.html || { echo 'Error: google-sites-apps-script-index.html not found. Make sure it exists in the repository root before running clasp push.'; exit 1; }
+test -f Code.gs || { echo 'Error: Code.gs not found. Make sure it exists in the current folder before running clasp push.'; exit 1; }
+test -f google-sites-apps-script-index.html || { echo 'Error: google-sites-apps-script-index.html not found. Make sure it exists in the current folder before running clasp push.'; exit 1; }
 rm -rf .apps-script-push
 mkdir -p .apps-script-push
 cp Code.gs .apps-script-push/Code.gs
 cp google-sites-apps-script-index.html .apps-script-push/index.html
 echo '{"scriptId":"${scriptId}","rootDir":"."}' > .apps-script-push/.clasp.json
-cd .apps-script-push
-clasp push`;
+(cd .apps-script-push && clasp push)`;
   }
 
   async function testScriptUrl(){
