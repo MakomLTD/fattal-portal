@@ -498,7 +498,7 @@
       return Array.isArray(data.projects)?data.projects:[];
     }
 
-    function scheduleRefresh(){ clearTimeout(_rt); _rt=setTimeout(async()=>{ try{ const rows=await fetchLiveData(); if(rows){ projects=rows.map(normalizeSheetProject).filter(p=>p.name&&p.link); renderProjects(); setRefreshUI('ok','עודכן: '+new Date().toLocaleTimeString('he-IL')); } }catch(e){ setRefreshUI('ok','רענון אוטומטי נכשל'); } scheduleRefresh(); },REFRESH_MS); }
+    function scheduleRefresh(){ clearTimeout(_rt); _rt=setTimeout(async()=>{ try{ const rows=await fetchLiveData(); if(rows){ projects=rows.map(normalizeSheetProject).filter(p=>p.name); renderProjects(); setRefreshUI('ok','עודכן בהצלחה: '+new Date().toLocaleTimeString('he-IL')); } }catch(e){ setRefreshUI('ok','רענון אוטומטי נכשל'); } scheduleRefresh(); },REFRESH_MS); }
 
     async function manualRefresh(){
       setRefreshUI('loading','מרענן נתונים...');
