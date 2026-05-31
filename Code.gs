@@ -11,11 +11,11 @@
 // =====================================================
 
 const SHEET_NAME = 'projects';
-const DEFAULT_SPREADSHEET_ID = '1XSqg6arCyVszvYHmsc392c64X0z1BhQSYywQmKD_w6k';
+const PORTAL_SPREADSHEET_ID = '1XSqg6arCyVszvYHmsc392c64X0z1BhQSYywQmKD_w6k';
 
 // קורא SPREADSHEET_ID מ-Script Properties (נשמר על-ידי fullSetup)
 function getSpreadsheetId_() {
-  return PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID') || DEFAULT_SPREADSHEET_ID;
+  return PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID') || PORTAL_SPREADSHEET_ID;
 }
 
 // ─── נקודת כניסה ─────────────────────────────────────
@@ -74,9 +74,11 @@ function doGet(e) {
 // ─── שכבת נתונים ──────────────────────────────────────
 function getProjects_(params) {
   const SPREADSHEET_ID = getSpreadsheetId_();
-  if (!SPREADSHEET_ID) {
-    return getSampleProjects_();
-  }
+  if (!SPREADSHEET_ID) return [];
+
+  const client  = String(params.client || '').trim().toLowerCase();
+  const token   = String(params.token  || '').trim();
+  if (!client || !token) return [];
 
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   const sheet = ss.getSheetByName(SHEET_NAME) || ss.getSheets()[0];
@@ -86,14 +88,12 @@ function getProjects_(params) {
   if (values.length < 2) return [];
 
   const headers = values.shift().map(normalizeHeader_);
-  const client  = String(params.client || '').trim().toLowerCase();
-  const token   = String(params.token  || '').trim();
 
   return values
     .map(rowToObject_(headers))
     .filter(r => String(r.active || '').toUpperCase() !== 'FALSE')
-    .filter(r => !client || String(r.client_id || '').trim().toLowerCase() === client)
-    .filter(r => !token  || String(r.token     || '').trim()               === token)
+    .filter(r => String(r.client_id || '').trim().toLowerCase() === client)
+    .filter(r => String(r.token     || '').trim()               === token)
     .map(r => ({
       project_name:     r.project_name,
       status:           r.status,
@@ -150,39 +150,6 @@ function normalizeHeader_(header) {
     'tags':'tags', 'progress':'progress', 'risk':'risk', 'next_step':'next_step'
   };
   return map[clean] || clean;
-}
-
-// ─── נתוני ברירת מחדל (כאשר fullSetup טרם הופעל) ──────
-function getSampleProjects_() {
-  return [
-    {
-      project_name:'לאונרדו קלאב ים המלח', status:'בביצוע',
-      description:'אתר פרויקט המרכז את סטטוס העבודות, תיעוד מהשטח, לו"ז מעודכן ומסמכים רלוונטיים.',
-      site_url:'https://sites.google.com/makomltd.com/fattal-dead-sea/', youtube_url:'',
-      image_url:'https://fattal-cms-prod.s3.eu-central-1.amazonaws.com/2_e113a6719b.jpg',
-      location:'ים המלח', lat:'31.2', lng:'35.3667',
-      planned_end_date:'2026-12-31', actual_end_date:'',
-      tags:'אתר פרויקט|מסמכים|עדכונים', progress:'45', risk:'בינוני', next_step:'תיאום עם קבלן ראשי'
-    },
-    {
-      project_name:'לאונרדו פלאזה ירושלים', status:'בביצוע',
-      description:'ריכוז דוחות ביצוע לפי קומות, סטטוס חדרים, צווארי בקבוק והמלצות להמשך ביצוע.',
-      site_url:'https://sites.google.com/makomltd.com/leonardo-jerusalem-fattal/', youtube_url:'',
-      image_url:'',
-      location:'ירושלים', lat:'31.7683', lng:'35.2137',
-      planned_end_date:'2026-10-31', actual_end_date:'',
-      tags:'אתר פרויקט|מסמכים|עדכונים', progress:'62', risk:'גבוה', next_step:'בדיקת איכות שלב ג\''
-    },
-    {
-      project_name:'מלון פלטין תל אביב', status:'בביצוע',
-      description:'כניסה לאזור הפרויקט לצפייה בעדכונים, קבצים, תמונות וסיכומי ישיבות.',
-      site_url:'https://sites.google.com/makomltd.com/fattal-palatin', youtube_url:'',
-      image_url:'',
-      location:'תל אביב', lat:'32.0853', lng:'34.7818',
-      planned_end_date:'2027-02-28', actual_end_date:'',
-      tags:'אתר פרויקט|מסמכים|עדכונים', progress:'28', risk:'נמוך', next_step:'התחלת שלב ב\''
-    }
-  ];
 }
 
 // ─── הגדרת ה-Sheet (כשה-ID כבר שמור) ────────────────────

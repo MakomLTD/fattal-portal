@@ -270,12 +270,6 @@
 
     const PROJECTS_FROM_SHEET = decodeTemplateData(_DATA && _DATA.dataset.projects, []);
 
-    const fallbackProjects = [
-      { client:'fattal', name:'לאונרדו קלאב ים המלח', location:'ים המלח', lat:31.2, lng:35.3667, status:'בביצוע', badge:'סטטוס: בביצוע', plannedEndDate:'2026-12-31', actualEndDate:'', desc:'אתר פרויקט המרכז את סטטוס העבודות, תיעוד מהשטח ומסמכים רלוונטיים.', tags:['אתר פרויקט','מסמכים','עדכונים'], link:'https://sites.google.com/makomltd.com/fattal-dead-sea/', youtubeUrl:'', image:'https://fattal-cms-prod.s3.eu-central-1.amazonaws.com/2_e113a6719b.jpg', progress:45, risk:'בינוני', nextStep:'תיאום עם קבלן ראשי' },
-      { client:'fattal', name:'לאונרדו פלאזה ירושלים', location:'ירושלים', lat:31.7683, lng:35.2137, status:'בביצוע', badge:'סטטוס: בביצוע', plannedEndDate:'2026-10-31', actualEndDate:'', desc:'ריכוז דוחות ביצוע לפי קומות, סטטוס חדרים וצווארי בקבוק.', tags:['אתר פרויקט','מסמכים','עדכונים'], link:'https://sites.google.com/makomltd.com/leonardo-jerusalem-fattal/', youtubeUrl:'', image:'', progress:62, risk:'גבוה', nextStep:'בדיקת איכות שלב ג\'' },
-      { client:'fattal', name:'מלון פלטין תל אביב', location:'תל אביב', lat:32.0853, lng:34.7818, status:'בביצוע', badge:'סטטוס: בביצוע', plannedEndDate:'2027-02-28', actualEndDate:'', desc:'כניסה לאזור הפרויקט לצפייה בעדכונים, קבצים ותמונות.', tags:['אתר פרויקט','מסמכים','עדכונים'], link:'https://sites.google.com/makomltd.com/fattal-palatin', youtubeUrl:'', image:'', progress:28, risk:'נמוך', nextStep:'התחלת שלב ב\'' }
-    ];
-
     function showAppError(msg){ const el=document.getElementById('appError'); if(el){ el.textContent=msg; el.classList.add('open'); } }
 
     let projects=[], activeStatusFilter='all', mapStatusFilter='all', map, mapMarkers=[];
@@ -443,10 +437,10 @@
     function setRefreshUI(s,t){ const d=document.getElementById('refreshDot'),x=document.getElementById('refreshText'); if(!d||!x) return; d.className='refresh-dot'+(s==='loading'?' loading':''); x.textContent=t; }
 
     async function fetchLiveData(){
-      if(!SCRIPT_URL) return false;
+      if(!SCRIPT_URL || !CLIENT_ID || !TOKEN_ID) return [];
       const parts=[SCRIPT_URL+'?action=data'];
-      if(CLIENT_ID) parts.push('client='+encodeURIComponent(CLIENT_ID));
-      if(TOKEN_ID)  parts.push('token='+encodeURIComponent(TOKEN_ID));
+      parts.push('client='+encodeURIComponent(CLIENT_ID));
+      parts.push('token='+encodeURIComponent(TOKEN_ID));
       const res=await fetch(parts[0]+(parts.length>1?'&'+parts.slice(1).join('&'):''),{cache:'no-store'});
       if(!res.ok) throw new Error('HTTP '+res.status);
       const data=await res.json();
@@ -466,13 +460,13 @@
       try{
         if(Array.isArray(PROJECTS_FROM_SHEET)&&PROJECTS_FROM_SHEET.length){ projects=PROJECTS_FROM_SHEET.map(normalizeSheetProject).filter(p=>p.name&&p.link); renderProjects(); setRefreshUI('ok','עודכן: '+new Date().toLocaleTimeString('he-IL')); scheduleRefresh(); return; }
         if(SCRIPT_URL){ setRefreshUI('loading','טוען נתונים...'); const rows=await fetchLiveData(); if(rows&&rows.length){ projects=rows.map(normalizeSheetProject).filter(p=>p.name&&p.link); renderProjects(); setRefreshUI('ok','עודכן: '+new Date().toLocaleTimeString('he-IL')); scheduleRefresh(); return; } }
-        projects=fallbackProjects; setRefreshUI('ok','נתוני הדגמה (חברו Google Sheet)');
-      }catch(e){ console.error(e); showAppError('לא הצלחתי לטעון נתונים. מוצגים נתוני הדגמה.'); projects=fallbackProjects; setRefreshUI('ok','שגיאה – נתוני הדגמה'); }
+        projects=[]; setRefreshUI('ok','אין נתונים להצגה');
+      }catch(e){ console.error(e); showAppError('לא הצלחתי לטעון נתונים.'); projects=[]; setRefreshUI('ok','אין נתונים להצגה'); }
       renderProjects();
     }
 
     window.addEventListener('error',e=>showAppError('שגיאה: '+(e.message||'בדקו את פריסת Apps Script')));
-    loadProjects().catch(e=>{ console.error(e); showAppError('שגיאה בטעינה. מוצגים נתוני הדגמה.'); projects=fallbackProjects; renderProjects(); });
+    loadProjects().catch(e=>{ console.error(e); showAppError('שגיאה בטעינה.'); projects=[]; renderProjects(); });
     setInterval(updateCountdowns,1000);
     document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeProjectDialog(); });
     document.getElementById('projectDialog').addEventListener('click',e=>{ if(e.target.id==='projectDialog') closeProjectDialog(); });
