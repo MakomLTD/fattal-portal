@@ -230,7 +230,7 @@
         </div>
         <div class="countdown" id="dialogCountdown" data-end-date="">
           <span class="stopwatch" aria-hidden="true"></span>
-          <span class="countdown-label">נותר עד סיום מתוכנן</span>
+          <span class="countdown-label">נותר עד סיום בפועל</span>
           <strong class="countdown-value">--:--:--</strong>
         </div>
         <div class="dialog-actions">
@@ -331,7 +331,7 @@
     function riskFillClass(r){ r=String(r||'').trim(); if(r==='גבוה'||r.toLowerCase()==='high') return 'risk-high'; if(r==='בינוני'||r.toLowerCase()==='medium') return 'risk-med'; return ''; }
 
     function cardTemplate(p,i){
-      const se=String(p.plannedEndDate||'').replace(/"/g,'&quot;'), pct=p.progress||0;
+      const se=String(p.actualEndDate||'').replace(/"/g,'&quot;'), pct=p.progress||0;
       const rh=p.risk?`<span class="risk-badge ${riskClass(p.risk)}">⬤ סיכון ${escapeHTML(p.risk)}</span>`:'';
       return `<article class="project-card" onclick="openProject(${i})">
         <div class="project-image" style="background-image:url('${escapeHTML(p.image)}')">
@@ -356,7 +356,7 @@
           </div>
           <div class="countdown" data-end-date="${se}">
             <span class="stopwatch" aria-hidden="true"></span>
-            <span class="countdown-label">נותר עד סיום מתוכנן</span>
+            <span class="countdown-label">נותר עד סיום בפועל</span>
             <strong class="countdown-value">--:--:--</strong>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
@@ -392,7 +392,7 @@
       document.getElementById('dialogPlannedEndDate').innerText=p.plannedEndDate||'-';
       document.getElementById('dialogActualEndDate').innerText=p.actualEndDate||'-';
       document.getElementById('dialogCover').style.backgroundImage=`url('${p.image}')`;
-      document.getElementById('dialogCountdown').dataset.endDate=p.plannedEndDate||'';
+      document.getElementById('dialogCountdown').dataset.endDate=p.actualEndDate||'';
       const sl=document.getElementById('dialogSiteLink');
       sl.href=isValidLink(p.link)?p.link:'#';
       sl.onclick=e=>openExternalSite(p.link,e);
