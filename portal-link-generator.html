@@ -425,10 +425,13 @@
     document.getElementById('claspPushCmd').textContent =
 `npm i -g @google/clasp
 clasp login
+test -f Code.gs || { echo 'Missing Code.gs'; exit 1; }
+test -f google-sites-apps-script-index.html || { echo 'Missing google-sites-apps-script-index.html'; exit 1; }
 mkdir -p .apps-script-push
 cp Code.gs .apps-script-push/Code.gs
 cp google-sites-apps-script-index.html .apps-script-push/index.html
-echo '{"scriptId":"${scriptId}","rootDir":".apps-script-push"}' > .clasp.json
+echo '{"scriptId":"${scriptId}","rootDir":"."}' > .apps-script-push/.clasp.json
+cd .apps-script-push
 clasp push`;
   }
 
