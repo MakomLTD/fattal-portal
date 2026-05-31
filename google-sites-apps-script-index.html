@@ -118,11 +118,6 @@
     .site-footer strong{color:#5B6FE8}
     .app-error{display:none;margin:0 auto 18px;max-width:1320px;border:1px solid rgba(224,90,71,.28);background:#FDEDEA;color:#7A2B21;border-radius:14px;padding:12px 16px;font-size:14px;font-weight:800}
     .app-error.open{display:block}
-    .progress-wrap{margin:10px 0 14px}
-    .progress-header{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:800;color:#596579;margin-bottom:5px}
-    .progress-track{background:#E8EBF1;border-radius:999px;height:9px;overflow:hidden}
-    .progress-fill{height:100%;border-radius:999px;background:var(--green);transition:width .6s ease}
-    .progress-fill.risk-high{background:var(--red)}.progress-fill.risk-med{background:var(--yellow)}
     .risk-badge{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:4px 10px;font-size:11px;font-weight:800;margin-bottom:8px}
     .risk-low{background:#E8F8EF;color:#1E7A48}.risk-med{background:#FFF7E2;color:#7A5B1D}.risk-high{background:#FDEDEA;color:#7A2B21}
     .refresh-bar{display:flex;align-items:center;gap:10px;padding:9px 16px;background:white;border:1px solid var(--line);border-radius:999px;font-size:13px;font-weight:700;color:#596579;margin-bottom:20px;width:fit-content}
@@ -131,8 +126,19 @@
     @keyframes rpulse{0%,100%{opacity:1}50%{opacity:.25}}
     .refresh-btn{border:0;background:transparent;color:var(--blue);font-weight:900;font-family:inherit;font-size:13px;cursor:pointer;padding:0;margin-right:4px}
     .refresh-btn:hover{text-decoration:underline}
+    .manager-panel{display:none;background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:var(--shadow);margin-bottom:20px}
+    .manager-panel.open{display:block}
+    .manager-panel h3{font-size:20px;margin-bottom:6px}
+    .manager-panel p{font-size:13px;color:#5C667A;margin-bottom:12px}
+    .manager-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    .manager-field{display:flex;flex-direction:column;gap:6px}
+    .manager-field label{font-size:12px;color:#596579;font-weight:800}
+    .manager-field input,.manager-field textarea,.manager-field select{width:100%;min-height:42px;border:1px solid #D9DFEA;border-radius:10px;padding:9px 11px;font-family:inherit;font-size:14px}
+    .manager-field textarea{min-height:86px;resize:vertical}
+    .manager-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    .manager-status{font-size:12px;font-weight:800;color:#596579;min-height:18px}
     @media(max-width:980px){.map-shell,.projects-grid{grid-template-columns:1fr}.hero{padding:42px 32px}.page{padding:18px}.map-panel{min-height:auto}}
-    @media(max-width:640px){.topbar,.section-head{align-items:flex-start;flex-direction:column}.projects-grid,.dialog-grid{grid-template-columns:1fr}.mini-kpis{grid-template-columns:repeat(3,1fr)}.countdown{grid-template-columns:auto 1fr}.hero{border-radius:22px;padding:38px 24px}.dialog-cover{height:190px}.dialog-title h3{font-size:25px}}
+    @media(max-width:640px){.topbar,.section-head{align-items:flex-start;flex-direction:column}.projects-grid,.dialog-grid,.manager-grid{grid-template-columns:1fr}.mini-kpis{grid-template-columns:repeat(3,1fr)}.countdown{grid-template-columns:auto 1fr}.hero{border-radius:22px;padding:38px 24px}.dialog-cover{height:190px}.dialog-title h3{font-size:25px}}
   </style>
 </head>
 <body>
@@ -159,6 +165,7 @@
       <div class="top-actions">
         <button class="pill" type="button" onclick="scrollToSection('projects')">פרויקטים</button>
         <button class="pill" type="button" onclick="scrollToSection('map')">מפה</button>
+        <button class="pill hidden" id="managerScreenBtn" type="button" onclick="toggleManagerPanel()" aria-label="מסך עדכון ערכים למנהלי פרויקטים מורשים" title="גישה למנהלי פרויקטים מורשים בלבד">ניהול ערכים</button>
       </div>
     </header>
 
@@ -183,6 +190,48 @@
         <span class="refresh-dot" id="refreshDot"></span>
         <span id="refreshText">טוען נתונים...</span>
         <button class="refresh-btn" type="button" onclick="manualRefresh()">רענון ידני</button>
+      </div>
+      <div class="manager-panel" id="managerPanel">
+        <h3>מסך מנהלי פרויקטים — עדכון ערכים</h3>
+        <p>העדכון נשמר ישירות ל-Google Sheet ומוגן באמצעות Manager Key.</p>
+        <div class="manager-grid">
+          <div class="manager-field">
+            <label for="managerProjectSelect">בחירת פרויקט</label>
+            <select id="managerProjectSelect" onchange="onManagerProjectChange()"></select>
+          </div>
+          <div class="manager-field">
+            <label for="managerStatus">סטטוס</label>
+            <input id="managerStatus" type="text" />
+          </div>
+          <div class="manager-field">
+            <label for="managerSiteUrl">קישור אתר</label>
+            <input id="managerSiteUrl" type="url" />
+          </div>
+          <div class="manager-field">
+            <label for="managerRisk">רמת סיכון</label>
+            <input id="managerRisk" type="text" />
+          </div>
+          <div class="manager-field">
+            <label for="managerPlannedEnd">סיום מתוכנן</label>
+            <input id="managerPlannedEnd" type="date" />
+          </div>
+          <div class="manager-field">
+            <label for="managerActualEnd">סיום בפועל</label>
+            <input id="managerActualEnd" type="date" />
+          </div>
+          <div class="manager-field" style="grid-column:1/-1">
+            <label for="managerNextStep">צעד הבא</label>
+            <input id="managerNextStep" type="text" />
+          </div>
+          <div class="manager-field" style="grid-column:1/-1">
+            <label for="managerDescription">תיאור</label>
+            <textarea id="managerDescription"></textarea>
+          </div>
+        </div>
+        <div class="manager-actions">
+          <button class="btn" type="button" onclick="saveManagerProject()">שמור עדכון</button>
+          <span class="manager-status" id="managerFormStatus"></span>
+        </div>
       </div>
       <div class="filters" id="statusFilters"></div>
       <div class="projects-grid" id="projectCards"></div>
@@ -260,16 +309,25 @@
 
     const _DATA      = document.getElementById('portal-template-data');
     const _CFG       = decodeTemplateData(_DATA && _DATA.dataset.config, {});
+    const _PARAMS    = new URLSearchParams(window.location.search || '');
     const SCRIPT_URL = _CFG.scriptUrl || '';
     const CLIENT_ID  = _CFG.clientId  || '';
     const TOKEN_ID   = _CFG.tokenId   || '';
+    const MANAGER_KEY = _PARAMS.get('manager_key') || _PARAMS.get('managerKey') || '';
     const REFRESH_MS = 5 * 60 * 1000;
 
     const PROJECTS_FROM_SHEET = decodeTemplateData(_DATA && _DATA.dataset.projects, []);
+    if (MANAGER_KEY) {
+      _PARAMS.delete('manager_key');
+      _PARAMS.delete('managerKey');
+      const cleanQuery = _PARAMS.toString();
+      const cleanUrl = window.location.pathname + (cleanQuery ? '?' + cleanQuery : '') + window.location.hash;
+      window.history.replaceState({}, document.title, cleanUrl);
+    }
 
     function showAppError(msg){ const el=document.getElementById('appError'); if(el){ el.textContent=msg; el.classList.add('open'); } }
 
-    let projects=[], activeStatusFilter='all', mapStatusFilter='all', map, mapMarkers=[];
+    let projects=[], activeStatusFilter='all', mapStatusFilter='all', map, mapMarkers=[], managerProjects=[];
 
     function escapeHTML(v){ return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])); }
     function isValidLink(v){ return v && v!=='#'; }
@@ -296,14 +354,13 @@
         tags, link:pick(row,['link','url','site_url','קישור'],'#'),
         youtubeUrl:pick(row,['youtubeUrl','youtube_url'],''),
         image:pick(row,['image','image_url','imageUrl'],'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80'),
-        progress:Math.min(100,Math.max(0,Number(pick(row,['progress','התקדמות'],'0'))||0)),
         risk:pick(row,['risk','סיכון'],''),
         nextStep:pick(row,['nextStep','next_step','פעולה הבאה'],'')
       };
     }
 
     function normalizeSheetProject(item,index){
-      return normalizeProject({ project_name:item.project_name, status:item.status, description:item.description, site_url:item.site_url, image_url:item.image_url, location:item.location, lat:item.lat, lng:item.lng, planned_end_date:item.planned_end_date, actual_end_date:item.actual_end_date, tags:item.tags, progress:item.progress, risk:item.risk, next_step:item.next_step }, index);
+      return normalizeProject({ project_name:item.project_name, status:item.status, description:item.description, site_url:item.site_url, image_url:item.image_url, location:item.location, lat:item.lat, lng:item.lng, planned_end_date:item.planned_end_date, actual_end_date:item.actual_end_date, tags:item.tags, risk:item.risk, next_step:item.next_step }, index);
     }
 
     function parseProjectDate(v){
@@ -328,10 +385,9 @@
     function updateCountdowns(){ document.querySelectorAll('[data-end-date]').forEach(el=>{ const d=countdownText(el.dataset.endDate); el.classList.toggle('overdue',d.overdue); el.querySelector('.countdown-label').innerText=d.label; el.querySelector('.countdown-value').innerHTML=d.value; }); }
 
     function riskClass(r){ r=String(r||'').trim(); if(r==='גבוה'||r.toLowerCase()==='high') return 'risk-high'; if(r==='בינוני'||r.toLowerCase()==='medium') return 'risk-med'; return 'risk-low'; }
-    function riskFillClass(r){ r=String(r||'').trim(); if(r==='גבוה'||r.toLowerCase()==='high') return 'risk-high'; if(r==='בינוני'||r.toLowerCase()==='medium') return 'risk-med'; return ''; }
 
     function cardTemplate(p,i){
-      const se=String(p.actualEndDate||'').replace(/"/g,'&quot;'), pct=p.progress||0;
+      const se=String(p.actualEndDate||'').replace(/"/g,'&quot;');
       const rh=p.risk?`<span class="risk-badge ${riskClass(p.risk)}">⬤ סיכון ${escapeHTML(p.risk)}</span>`:'';
       return `<article class="project-card" onclick="openProject(${i})">
         <div class="project-image" style="background-image:url('${escapeHTML(p.image)}')">
@@ -345,10 +401,6 @@
             <div class="tags" style="margin:0">${p.tags.map(t=>`<span class="tag">${escapeHTML(t)}</span>`).join('')}</div>${rh}
           </div>
           <p>${escapeHTML(p.desc)}</p>
-          <div class="progress-wrap">
-            <div class="progress-header"><span>התקדמות</span><span>${pct}%</span></div>
-            <div class="progress-track"><div class="progress-fill ${riskFillClass(p.risk)}" style="width:${pct}%"></div></div>
-          </div>
           <div class="mini-kpis">
             <div class="mini-kpi"><strong>${escapeHTML(p.location||'-')}</strong><span>מיקום</span></div>
             <div class="mini-kpi"><strong>${escapeHTML(p.plannedEndDate||'-')}</strong><span>סיום מתוכנן</span></div>
@@ -460,8 +512,115 @@
       renderProjects();
     }
 
+    function toggleManagerPanel(){
+      const panel=document.getElementById('managerPanel');
+      if(!panel || !MANAGER_KEY) return;
+      panel.classList.toggle('open');
+    }
+
+    function setManagerStatus(message){
+      const el=document.getElementById('managerFormStatus');
+      if(el) el.textContent=message || '';
+    }
+
+    function onManagerProjectChange(){
+      const sel=document.getElementById('managerProjectSelect');
+      const idx=sel?Number(sel.value):-1;
+      const item=Number.isInteger(idx)&&idx>=0?managerProjects[idx]:null;
+      if(!item){ setManagerStatus('לא נמצאו פרויקטים לעדכון'); return; }
+      document.getElementById('managerStatus').value=item.status||'';
+      document.getElementById('managerDescription').value=item.description||'';
+      document.getElementById('managerSiteUrl').value=item.site_url||'';
+      document.getElementById('managerPlannedEnd').value=item.planned_end_date||'';
+      document.getElementById('managerActualEnd').value=item.actual_end_date||'';
+      document.getElementById('managerRisk').value=item.risk||'';
+      document.getElementById('managerNextStep').value=item.next_step||'';
+      setManagerStatus('');
+    }
+
+    function refreshManagerSelector(){
+      const sel=document.getElementById('managerProjectSelect');
+      if(!sel) return;
+      sel.innerHTML=managerProjects.length
+        ?managerProjects.map((p,i)=>`<option value="${i}">${escapeHTML(p.project_name||`פרויקט ${i+1}`)}</option>`).join('')
+        :'<option value="-1">אין פרויקטים זמינים</option>';
+      onManagerProjectChange();
+    }
+
+    async function loadManagerProjects(){
+      if(!SCRIPT_URL || !MANAGER_KEY) return;
+      const res=await fetch(SCRIPT_URL,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          action:'adminData',
+          managerKey:MANAGER_KEY,
+          client:CLIENT_ID,
+          token:TOKEN_ID
+        })
+      });
+      if(!res.ok) throw new Error('HTTP '+res.status+' '+(res.statusText||''));
+      const data=await res.json();
+      if(!data.ok) throw new Error(data.error||'שגיאת מנהל');
+      managerProjects=Array.isArray(data.projects)?data.projects:[];
+      refreshManagerSelector();
+    }
+
+    async function saveManagerProject(){
+      if(!SCRIPT_URL || !MANAGER_KEY) return;
+      const sel=document.getElementById('managerProjectSelect');
+      const idx=sel?Number(sel.value):-1;
+      const item=Number.isInteger(idx)&&idx>=0?managerProjects[idx]:null;
+      if(!item){ setManagerStatus('אין פרויקט לעדכון'); return; }
+      try{
+        const updates={
+          status:document.getElementById('managerStatus').value.trim(),
+          description:document.getElementById('managerDescription').value.trim(),
+          site_url:document.getElementById('managerSiteUrl').value.trim(),
+          planned_end_date:document.getElementById('managerPlannedEnd').value.trim(),
+          actual_end_date:document.getElementById('managerActualEnd').value.trim(),
+          risk:document.getElementById('managerRisk').value.trim(),
+          next_step:document.getElementById('managerNextStep').value.trim()
+        };
+        setManagerStatus('שומר...');
+        const res=await fetch(SCRIPT_URL,{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({
+            action:'adminUpdate',
+            managerKey:MANAGER_KEY,
+            client:CLIENT_ID,
+            token:TOKEN_ID,
+            project_name:item.project_name,
+            updates:updates
+          })
+        });
+        const data=await res.json();
+        if(!data.ok) throw new Error(data.error||'עדכון נכשל');
+        setManagerStatus('השינויים נשמרו');
+        await manualRefresh();
+        await loadManagerProjects();
+      }catch(e){
+        console.error(e);
+        setManagerStatus('שמירה נכשלה: ' + (e && e.message ? e.message : 'שגיאה לא ידועה'));
+      }
+    }
+
+    async function initManagerPanel(){
+      if(!MANAGER_KEY) return;
+      const btn=document.getElementById('managerScreenBtn');
+      if(btn) btn.classList.remove('hidden');
+      try{
+        await loadManagerProjects();
+      }catch(e){
+        console.error(e);
+        setManagerStatus('אין גישה למסך מנהלים');
+      }
+    }
+
     window.addEventListener('error',e=>showAppError('שגיאה: '+(e.message||'בדקו את פריסת Apps Script')));
     loadProjects().catch(e=>{ console.error(e); showAppError('שגיאה בטעינה.'); projects=[]; renderProjects(); });
+    initManagerPanel().catch(e=>console.error(e));
     setInterval(updateCountdowns,1000);
     document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeProjectDialog(); });
     document.getElementById('projectDialog').addEventListener('click',e=>{ if(e.target.id==='projectDialog') closeProjectDialog(); });

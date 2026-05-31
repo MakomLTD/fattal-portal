@@ -23,12 +23,23 @@
 ## מבנה הגיליון
 
 ```
-client_id | token | active | project_name | status | description | site_url | youtube_url | image_url | location | lat | lng | planned_end_date | actual_end_date | tags | progress | risk | next_step
+client_id | token | active | project_name | status | description | site_url | youtube_url | image_url | location | lat | lng | planned_end_date | actual_end_date | tags | risk | next_step
 ```
 
-- `progress` — מספר 0–100
 - `risk` — נמוך / בינוני / גבוה
 - `active` — TRUE / FALSE
+
+### אבטחת מסך מנהלי פרויקטים
+
+- קריאה רגילה לפורטל נשארת עם `client` + `token`
+- לעדכון נתונים נדרש `manager_key` נוסף (נפרד מה-token)
+- הגדרת מפתח מנהל פעם אחת ב-Apps Script:
+
+```js
+setManagerKey('your-strong-manager-key')
+```
+
+- פתיחת מסך מנהל: הוסיפו ל-URL של הפורטל גם `manager_key=...`
 
 ---
 מופעל על ידי **MAKOM LTD**

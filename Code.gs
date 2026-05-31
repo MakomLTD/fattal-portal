@@ -12,6 +12,18 @@
 
 const SHEET_NAME = 'projects';
 const PORTAL_SPREADSHEET_ID = '1XSqg6arCyVszvYHmsc392c64X0z1BhQSYywQmKD_w6k';
+const MANAGER_EDITABLE_FIELDS = [
+  'active','project_name','status','description','site_url','youtube_url','image_url',
+  'location','lat','lng','planned_end_date','actual_end_date','tags','risk','next_step'
+];
+const MANAGER_EDITABLE_FIELD_SET = MANAGER_EDITABLE_FIELDS.reduce(function(acc, field) {
+  acc[field] = true;
+  return acc;
+}, {});
+const LAT_MIN = -90;
+const LAT_MAX = 90;
+const LNG_MIN = -180;
+const LNG_MAX = 180;
 
 // קורא SPREADSHEET_ID מ-Script Properties (נשמר על-ידי fullSetup)
 function getSpreadsheetId_() {
@@ -71,6 +83,37 @@ function doGet(e) {
   }
 }
 
+function doPost(e) {
+  let payload = {};
+  try {
+    payload = JSON.parse((e && e.postData && e.postData.contents) || '{}');
+  } catch (error) {
+    return jsonResponse_({ ok: false, error: 'Invalid JSON payload' });
+  }
+
+  try {
+    if (payload.action === 'adminData') {
+      return jsonResponse_({
+        ok: true,
+        projects: getManagerProjects_(payload),
+        updatedAt: new Date().toISOString()
+      });
+    }
+
+    if (payload.action === 'adminUpdate') {
+      return jsonResponse_({
+        ok: true,
+        project: updateProjectByManager_(payload),
+        updatedAt: new Date().toISOString()
+      });
+    }
+
+    return jsonResponse_({ ok: false, error: 'Unknown action' });
+  } catch (error) {
+    return jsonResponse_({ ok: false, error: String(error.message || error), projects: [] });
+  }
+}
+
 // ─── שכבת נתונים ──────────────────────────────────────
 function getProjects_(params) {
   const SPREADSHEET_ID = getSpreadsheetId_();
@@ -107,10 +150,105 @@ function getProjects_(params) {
       planned_end_date: r.planned_end_date,
       actual_end_date:  r.actual_end_date,
       tags:             r.tags,
-      progress:         r.progress,
       risk:             r.risk,
       next_step:        r.next_step
     }));
+}
+
+function getManagerProjects_(params) {
+  if (!isManagerAuthorized_(params)) {
+    throw new Error('גישה נדחתה: Manager Key לא תקין');
+  }
+
+  const SPREADSHEET_ID = getSpreadsheetId_();
+  if (!SPREADSHEET_ID) return [];
+
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = ss.getSheetByName(SHEET_NAME) || ss.getSheets()[0];
+  if (!sheet) throw new Error('לא נמצא גיליון נתונים');
+
+  const values = sheet.getDataRange().getDisplayValues();
+  if (values.length < 2) return [];
+  const headers = values.shift().map(normalizeHeader_);
+
+  const client = String(params.client || '').trim().toLowerCase();
+  const token = String(params.token || '').trim();
+
+  return values
+    .map((row, idx) => ({ row: rowToObject_(headers)(row), rowNumber: idx + 2 }))
+    .filter(item => !client || String(item.row.client_id || '').trim().toLowerCase() === client)
+    .filter(item => !token || String(item.row.token || '').trim() === token)
+    .map(item => ({
+      rowNumber: item.rowNumber,
+      project_name: item.row.project_name,
+      status: item.row.status,
+      description: item.row.description,
+      site_url: item.row.site_url,
+      planned_end_date: item.row.planned_end_date,
+      actual_end_date: item.row.actual_end_date,
+      risk: item.row.risk,
+      next_step: item.row.next_step
+    }));
+}
+
+function updateProjectByManager_(payload) {
+  if (!isManagerAuthorized_(payload)) {
+    throw new Error('גישה נדחתה: Manager Key לא תקין');
+  }
+
+  const SPREADSHEET_ID = getSpreadsheetId_();
+  if (!SPREADSHEET_ID) throw new Error('לא הוגדר SPREADSHEET_ID');
+
+  const client = String(payload.client || '').trim().toLowerCase();
+  const token = String(payload.token || '').trim();
+  const projectName = String(payload.project_name || '').trim();
+  const updates = payload.updates && typeof payload.updates === 'object' ? payload.updates : {};
+  if (!client || !token || !projectName) {
+    throw new Error('חסר מזהה לקוח, טוקן או שם פרויקט');
+  }
+
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = ss.getSheetByName(SHEET_NAME) || ss.getSheets()[0];
+  if (!sheet) throw new Error('לא נמצא גיליון נתונים');
+
+  const values = sheet.getDataRange().getDisplayValues();
+  if (values.length < 2) throw new Error('אין נתונים לעדכון');
+  const headers = values[0].map(normalizeHeader_);
+  const rows = values.slice(1);
+
+  const targetIndex = rows.findIndex(row => {
+    const obj = rowToObject_(headers)(row);
+    return String(obj.client_id || '').trim().toLowerCase() === client &&
+      String(obj.token || '').trim() === token &&
+      String(obj.project_name || '').trim() === projectName;
+  });
+  if (targetIndex < 0) throw new Error('הפרויקט לא נמצא לעדכון');
+
+  const rowNumber = targetIndex + 2;
+  const row = sheet.getRange(rowNumber, 1, 1, headers.length).getDisplayValues()[0];
+  let changed = 0;
+  const ignoredFields = [];
+
+  Object.keys(updates).forEach(function(field) {
+    if (!MANAGER_EDITABLE_FIELD_SET[field]) {
+      ignoredFields.push(field);
+      return;
+    }
+    const columnIndex = headers.indexOf(field);
+    if (columnIndex < 0) {
+      ignoredFields.push(field);
+      return;
+    }
+    row[columnIndex] = normalizeUpdateValue_(field, updates[field]);
+    changed++;
+  });
+
+  if (!changed) {
+    throw new Error('לא נשלחו שדות תקינים לעדכון');
+  }
+
+  sheet.getRange(rowNumber, 1, 1, headers.length).setValues([row]);
+  return { rowNumber: rowNumber, project_name: projectName, changed: changed, ignoredFields: ignoredFields };
 }
 
 function rowToObject_(headers) {
@@ -138,7 +276,6 @@ function normalizeHeader_(header) {
     'תאריך סיום מתוכנן':'planned_end_date', 'סיום מתוכנן':'planned_end_date', 'תאריך סיום':'planned_end_date',
     'תאריך סיום בפועל':'actual_end_date',   'סיום בפועל':'actual_end_date',
     'תגיות':'tags',
-    'התקדמות':'progress', 'אחוז התקדמות':'progress',
     'סיכון':'risk',       'רמת סיכון':'risk',
     'פעולה הבאה':'next_step', 'צעד הבא':'next_step',
     // אנגלית pass-through
@@ -147,9 +284,56 @@ function normalizeHeader_(header) {
     'site_url':'site_url', 'youtube_url':'youtube_url', 'image_url':'image_url',
     'location':'location', 'lat':'lat', 'lng':'lng',
     'planned_end_date':'planned_end_date', 'actual_end_date':'actual_end_date',
-    'tags':'tags', 'progress':'progress', 'risk':'risk', 'next_step':'next_step'
+    'tags':'tags', 'risk':'risk', 'next_step':'next_step'
   };
   return map[clean] || clean;
+}
+
+function getManagerKey_() {
+  return String(PropertiesService.getScriptProperties().getProperty('MANAGER_KEY') || '').trim();
+}
+
+function setManagerKey(key) {
+  const normalized = String(key || '').trim();
+  if (normalized.length < 32) {
+    throw new Error('Manager Key חייב להיות באורך מינימלי של 32 תווים');
+  }
+  if (!/[a-z]/.test(normalized) || !/[A-Z]/.test(normalized) || !/[0-9]/.test(normalized) || !/[^A-Za-z0-9]/.test(normalized)) {
+    throw new Error('Manager Key חייב לכלול אות קטנה, אות גדולה, מספר ותו מיוחד');
+  }
+  PropertiesService.getScriptProperties().setProperty('MANAGER_KEY', normalized);
+}
+
+function isManagerAuthorized_(params) {
+  const configured = getManagerKey_();
+  const provided = String((params && (params.manager_key || params.managerKey)) || '').trim();
+  return !!configured && !!provided && timingSafeEqual_(configured, provided);
+}
+
+function timingSafeEqual_(left, right) {
+  const a = String(left || '');
+  const b = String(right || '');
+  const maxLen = Math.max(a.length, b.length);
+  let diff = a.length ^ b.length;
+  for (let i = 0; i < maxLen; i++) {
+    diff |= (a.charCodeAt(i) || 0) ^ (b.charCodeAt(i) || 0);
+  }
+  return diff === 0;
+}
+
+function normalizeUpdateValue_(field, value) {
+  if (field === 'lat' || field === 'lng') {
+    const num = Number(value);
+    if (!Number.isFinite(num)) return '';
+    if (field === 'lat' && (num < LAT_MIN || num > LAT_MAX)) return '';
+    if (field === 'lng' && (num < LNG_MIN || num > LNG_MAX)) return '';
+    return String(num);
+  }
+  if (field === 'active') {
+    const normalized = String(value || '').trim().toUpperCase();
+    return normalized === 'FALSE' ? 'FALSE' : 'TRUE';
+  }
+  return String(value == null ? '' : value).trim();
 }
 
 // ─── הגדרת ה-Sheet (כשה-ID כבר שמור) ────────────────────
@@ -206,22 +390,22 @@ function _populateSheet_(ss) {
   const headers = [
     'client_id','token','active','project_name','status','description',
     'site_url','youtube_url','image_url','location','lat','lng',
-    'planned_end_date','actual_end_date','tags','progress','risk','next_step'
+    'planned_end_date','actual_end_date','tags','risk','next_step'
   ];
   const rows = [
     ['fattal','abc123','TRUE','לאונרדו קלאב ים המלח','בביצוע',
      'אתר פרויקט המרכז סטטוס עבודות, מסמכים ותיעוד.',
      'https://sites.google.com/makomltd.com/fattal-dead-sea/','',
      'https://fattal-cms-prod.s3.eu-central-1.amazonaws.com/2_e113a6719b.jpg',
-     'ים המלח','31.2','35.3667','2026-12-31','','אתר פרויקט|מסמכים|עדכונים','45','בינוני','תיאום עם קבלן'],
+     'ים המלח','31.2','35.3667','2026-12-31','','אתר פרויקט|מסמכים|עדכונים','בינוני','תיאום עם קבלן'],
     ['fattal','abc123','TRUE','לאונרדו פלאזה ירושלים','בביצוע',
      'ריכוז דוחות ביצוע וסטטוס חדרים.',
      'https://sites.google.com/makomltd.com/leonardo-jerusalem-fattal/','','',
-     'ירושלים','31.7683','35.2137','2026-10-31','','אתר פרויקט|מסמכים|עדכונים','62','גבוה','בדיקת איכות'],
+     'ירושלים','31.7683','35.2137','2026-10-31','','אתר פרויקט|מסמכים|עדכונים','גבוה','בדיקת איכות'],
     ['fattal','abc123','TRUE','מלון פלטין תל אביב','בביצוע',
      'עדכונים, קבצים, תמונות וסיכומי ישיבות.',
      'https://sites.google.com/makomltd.com/fattal-palatin','','',
-     'תל אביב','32.0853','34.7818','2027-02-28','','אתר פרויקט|מסמכים|עדכונים','28','נמוך','התחלת שלב ב']
+     'תל אביב','32.0853','34.7818','2027-02-28','','אתר פרויקט|מסמכים|עדכונים','נמוך','התחלת שלב ב']
   ];
 
   sheet.getRange(1, 1, 1, headers.length).setValues([headers])
