@@ -11,7 +11,7 @@
 // =====================================================
 
 const SHEET_NAME = 'projects';
-const DEFAULT_SPREADSHEET_ID = '1zJuPktt0sacLfRXEvq-Ku2yfRnk0diT5t4ahWSH29io';
+const DEFAULT_SPREADSHEET_ID = '1XSqg6arCyVszvYHmsc392c64X0z1BhQSYywQmKD_w6k';
 
 // קורא SPREADSHEET_ID מ-Script Properties (נשמר על-ידי fullSetup)
 function getSpreadsheetId_() {
