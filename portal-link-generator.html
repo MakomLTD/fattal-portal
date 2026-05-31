@@ -281,6 +281,22 @@
 
     </div>
 
+    <div class="card" style="margin-top:16px">
+      <h2><span>🔁</span> חיבור ל-Google Apps Script עם Push (clasp)</h2>
+      <p style="margin:8px 0 12px;color:var(--muted);font-size:13px">
+        אופציונלי: אם רוצים לעבוד מה-Repo ולעשות Push ישיר ל-Apps Script.
+      </p>
+      <div class="field">
+        <label>Script ID של פרויקט ה-Apps Script</label>
+        <input type="text" id="scriptProjectId" placeholder="לדוגמה: 1AbCdEfGhIjKlMnOpQrStUvWxYz..." oninput="saveScriptProjectId()">
+      </div>
+      <div class="output-label" style="margin-top:10px">פקודות להרצה בטרמינל</div>
+      <pre class="output-code" id="claspPushCmd" style="white-space:pre-wrap"></pre>
+      <div class="btn-row">
+        <button class="btn btn-navy" onclick="copyText('claspPushCmd')">📋 העתק פקודות</button>
+      </div>
+    </div>
+
   </div><!-- /main-grid -->
 
   <!-- Alt section -->
@@ -375,6 +391,7 @@
   // ─── State ────────────────────────────────────────────
   let clients = JSON.parse(localStorage.getItem('makom_clients') || '[]');
   let scriptUrl = localStorage.getItem('makom_script_url') || '';
+  let scriptProjectId = localStorage.getItem('makom_script_project_id') || '';
 
   if (!clients.length) {
     clients = [{ name: 'פתאל (דמה)', clientId: 'fattal', token: 'abc123', height: 920 }];
@@ -383,6 +400,8 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     if(scriptUrl) document.getElementById('globalScriptUrl').value = scriptUrl;
+    if(scriptProjectId) document.getElementById('scriptProjectId').value = scriptProjectId;
+    updateClaspPushCommand();
     renderTable();
     updatePreview();
   });
@@ -393,6 +412,21 @@
     localStorage.setItem('makom_script_url', scriptUrl);
     renderTable();
     updatePreview();
+  }
+
+  function saveScriptProjectId(){
+    scriptProjectId = document.getElementById('scriptProjectId').value.trim();
+    localStorage.setItem('makom_script_project_id', scriptProjectId);
+    updateClaspPushCommand();
+  }
+
+  function updateClaspPushCommand(){
+    const scriptId = scriptProjectId || '<SCRIPT_ID>';
+    document.getElementById('claspPushCmd').textContent =
+`npm i -g @google/clasp
+clasp login
+echo '{"scriptId":"${scriptId}","rootDir":"."}' > .clasp.json
+clasp push`;
   }
 
   async function testScriptUrl(){
