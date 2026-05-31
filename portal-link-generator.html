@@ -425,8 +425,8 @@
     document.getElementById('claspPushCmd').textContent =
 `npm i -g @google/clasp
 clasp login
-test -f Code.gs || { echo 'Error: Code.gs not found. Make sure it exists in the project directory where you run these commands.'; exit 1; }
-test -f google-sites-apps-script-index.html || { echo 'Error: google-sites-apps-script-index.html not found. Make sure it exists in the project directory where you run these commands.'; exit 1; }
+test -f Code.gs || { echo 'Error: Code.gs not found in current directory. Please run this command from the project root containing Code.gs and google-sites-apps-script-index.html.'; exit 1; }
+test -f google-sites-apps-script-index.html || { echo 'Error: google-sites-apps-script-index.html not found in current directory. Please run this command from the project root containing Code.gs and google-sites-apps-script-index.html.'; exit 1; }
 rm -rf .apps-script-push
 mkdir -p .apps-script-push
 cp Code.gs .apps-script-push/Code.gs
