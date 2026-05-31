@@ -165,7 +165,7 @@
       <div class="top-actions">
         <button class="pill" type="button" onclick="scrollToSection('projects')">פרויקטים</button>
         <button class="pill" type="button" onclick="scrollToSection('map')">מפה</button>
-        <button class="pill hidden" id="managerScreenBtn" type="button" onclick="toggleManagerPanel()">ניהול ערכים</button>
+        <button class="pill hidden" id="managerScreenBtn" type="button" onclick="toggleManagerPanel()" aria-label="מסך עדכון ערכים למנהלי פרויקטים מורשים">ניהול ערכים</button>
       </div>
     </header>
 
@@ -213,11 +213,11 @@
           </div>
           <div class="manager-field">
             <label for="managerPlannedEnd">סיום מתוכנן</label>
-            <input id="managerPlannedEnd" type="text" placeholder="YYYY-MM-DD" />
+            <input id="managerPlannedEnd" type="date" />
           </div>
           <div class="manager-field">
             <label for="managerActualEnd">סיום בפועל</label>
-            <input id="managerActualEnd" type="text" placeholder="YYYY-MM-DD" />
+            <input id="managerActualEnd" type="date" />
           </div>
           <div class="manager-field" style="grid-column:1/-1">
             <label for="managerNextStep">צעד הבא</label>
@@ -541,8 +541,16 @@
 
     async function loadManagerProjects(){
       if(!SCRIPT_URL || !MANAGER_KEY) return;
-      const url=`${SCRIPT_URL}?action=adminData&manager_key=${encodeURIComponent(MANAGER_KEY)}&client=${encodeURIComponent(CLIENT_ID)}&token=${encodeURIComponent(TOKEN_ID)}`;
-      const res=await fetch(url,{cache:'no-store'});
+      const res=await fetch(SCRIPT_URL,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          action:'adminData',
+          managerKey:MANAGER_KEY,
+          client:CLIENT_ID,
+          token:TOKEN_ID
+        })
+      });
       if(!res.ok) throw new Error('HTTP '+res.status);
       const data=await res.json();
       if(!data.ok) throw new Error(data.error||'שגיאת מנהל');

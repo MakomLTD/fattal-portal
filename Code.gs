@@ -40,19 +40,6 @@ function doGet(e) {
     }
   }
 
-  // [1.1] JSON API למנהל פרויקטים
-  if (params.action === 'adminData') {
-    try {
-      return jsonResponse_({
-        ok: true,
-        projects: getManagerProjects_(params),
-        updatedAt: new Date().toISOString()
-      });
-    } catch (error) {
-      return jsonResponse_({ ok: false, error: String(error.message || error), projects: [] });
-    }
-  }
-
   // [2] בדיקת תקינות פריסה
   if (params.test === '1') {
     return HtmlService
@@ -97,18 +84,26 @@ function doPost(e) {
     return jsonResponse_({ ok: false, error: 'Invalid JSON payload' });
   }
 
-  if (payload.action !== 'adminUpdate') {
-    return jsonResponse_({ ok: false, error: 'Unknown action' });
-  }
-
   try {
-    return jsonResponse_({
-      ok: true,
-      project: updateProjectByManager_(payload),
-      updatedAt: new Date().toISOString()
-    });
+    if (payload.action === 'adminData') {
+      return jsonResponse_({
+        ok: true,
+        projects: getManagerProjects_(payload),
+        updatedAt: new Date().toISOString()
+      });
+    }
+
+    if (payload.action === 'adminUpdate') {
+      return jsonResponse_({
+        ok: true,
+        project: updateProjectByManager_(payload),
+        updatedAt: new Date().toISOString()
+      });
+    }
+
+    return jsonResponse_({ ok: false, error: 'Unknown action' });
   } catch (error) {
-    return jsonResponse_({ ok: false, error: String(error.message || error) });
+    return jsonResponse_({ ok: false, error: String(error.message || error), projects: [] });
   }
 }
 
@@ -225,11 +220,18 @@ function updateProjectByManager_(payload) {
   const rowNumber = targetIndex + 2;
   const row = sheet.getRange(rowNumber, 1, 1, headers.length).getDisplayValues()[0];
   let changed = 0;
+  const ignoredFields = [];
 
   Object.keys(updates).forEach(function(field) {
-    if (MANAGER_EDITABLE_FIELDS.indexOf(field) === -1) return;
+    if (MANAGER_EDITABLE_FIELDS.indexOf(field) === -1) {
+      ignoredFields.push(field);
+      return;
+    }
     const columnIndex = headers.indexOf(field);
-    if (columnIndex < 0) return;
+    if (columnIndex < 0) {
+      ignoredFields.push(field);
+      return;
+    }
     row[columnIndex] = normalizeUpdateValue_(field, updates[field]);
     changed++;
   });
@@ -239,7 +241,7 @@ function updateProjectByManager_(payload) {
   }
 
   sheet.getRange(rowNumber, 1, 1, headers.length).setValues([row]);
-  return { rowNumber: rowNumber, project_name: projectName, changed: changed };
+  return { rowNumber: rowNumber, project_name: projectName, changed: changed, ignoredFields: ignoredFields };
 }
 
 function rowToObject_(headers) {
@@ -285,7 +287,11 @@ function getManagerKey_() {
 }
 
 function setManagerKey(key) {
-  PropertiesService.getScriptProperties().setProperty('MANAGER_KEY', String(key || '').trim());
+  const normalized = String(key || '').trim();
+  if (normalized.length < 16) {
+    throw new Error('Manager Key חייב להיות באורך מינימלי של 16 תווים');
+  }
+  PropertiesService.getScriptProperties().setProperty('MANAGER_KEY', normalized);
 }
 
 function isManagerAuthorized_(params) {
@@ -297,7 +303,10 @@ function isManagerAuthorized_(params) {
 function normalizeUpdateValue_(field, value) {
   if (field === 'lat' || field === 'lng') {
     const num = Number(value);
-    return Number.isFinite(num) ? String(num) : '';
+    if (!Number.isFinite(num)) return '';
+    if (field === 'lat' && (num < -90 || num > 90)) return '';
+    if (field === 'lng' && (num < -180 || num > 180)) return '';
+    return String(num);
   }
   if (field === 'active') {
     const normalized = String(value || '').trim().toUpperCase();
