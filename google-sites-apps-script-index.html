@@ -54,7 +54,7 @@
     .section-head{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;margin:28px 0 14px}
     .section-head h2{font-size:clamp(30px,2.7vw,40px);line-height:1.15;font-weight:900}
     .section-head p{color:#5C667A;max-width:720px;font-size:clamp(16px,1.2vw,19px)}
-    .projects-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:18px;align-items:stretch}
+    .projects-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,310px),1fr));gap:18px;align-items:stretch}
     .project-card{background:var(--card);border-radius:14px;overflow:hidden;box-shadow:0 10px 26px rgba(17,25,63,.08);border:1px solid rgba(231,234,240,.95);transition:.25s ease;position:relative}
     .project-card:after{content:"";position:absolute;inset:0 auto 0 0;width:5px;background:var(--yellow);opacity:.95}
     .project-card:hover{transform:translateY(-5px);box-shadow:0 24px 55px rgba(17,25,63,.18)}
@@ -86,7 +86,7 @@
     .countdown.overdue .countdown-value{color:var(--red)}
     .sheet-status{display:none}
     .filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:0 0 18px}
-    .project-controls{display:grid;grid-template-columns:minmax(260px,1fr) auto;gap:12px;align-items:center;margin:0 0 12px;background:rgba(255,255,255,.72);border:1px solid rgba(231,234,240,.86);border-radius:16px;padding:10px;box-shadow:0 8px 22px rgba(17,25,63,.05)}
+    .project-controls{position:relative;display:grid;grid-template-columns:minmax(260px,1fr) auto;gap:12px;align-items:center;margin:0 0 12px;background:rgba(255,255,255,.72);border:1px solid rgba(231,234,240,.86);border-radius:16px;padding:10px;box-shadow:0 8px 22px rgba(17,25,63,.05)}
     .project-search{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;background:white;border:1px solid var(--line);border-radius:12px;padding:10px 12px;box-shadow:0 8px 20px rgba(17,25,63,.05);transition:.2s ease}
     .project-search:focus-within{border-color:rgba(252,177,39,.9);box-shadow:0 0 0 4px rgba(252,177,39,.16),0 10px 26px rgba(17,25,63,.08)}
     .search-icon{font-weight:900;color:var(--yellow);font-size:18px}
@@ -96,6 +96,11 @@
     .search-clear.visible{display:inline-flex}
     .search-clear:hover{background:#E9EDF5;color:var(--navy)}
     .search-count{color:#596579;font-size:13px;font-weight:800;background:white;border:1px solid var(--line);border-radius:999px;padding:9px 14px;white-space:nowrap}
+    .search-suggestions{position:absolute;z-index:30;top:calc(100% + 8px);right:10px;left:130px;display:none;background:white;border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 44px rgba(17,25,63,.16);padding:8px;max-height:280px;overflow:auto}
+    .search-suggestions.open{display:grid;gap:6px}
+    .suggestion-btn{border:0;background:#F8FAFC;color:var(--navy);border-radius:12px;padding:12px 14px;text-align:right;font:inherit;font-weight:900;cursor:pointer;display:grid;gap:2px}
+    .suggestion-btn:hover,.suggestion-btn:focus{background:#FFF7E6;outline:2px solid rgba(252,177,39,.42)}
+    .suggestion-btn small{color:#6A7488;font-weight:800}
     .empty-state{grid-column:1/-1;background:white;border:1px dashed #C9D1DF;border-radius:16px;padding:32px 22px;text-align:center;color:#58647A}
     .empty-state h2{font-size:clamp(24px,2vw,30px);color:var(--navy);margin-bottom:8px}
     .empty-state p{font-size:16px;margin-bottom:16px}
@@ -183,10 +188,11 @@
       .section-head p{font-size:17px}
       .refresh-bar{display:none}
       .filters{display:grid;grid-template-columns:1fr 1fr;width:100%;gap:8px}
-      .project-controls{grid-template-columns:1fr}
+      .project-controls{position:sticky;top:8px;z-index:18;grid-template-columns:1fr;background:rgba(255,255,255,.94);box-shadow:0 14px 34px rgba(17,25,63,.13);backdrop-filter:blur(12px)}
       .project-search{border-radius:16px;padding:12px 14px}
       .project-search input{font-size:17px}
       .search-count{width:100%;border-radius:14px;text-align:center}
+      .search-suggestions{right:10px;left:10px;top:68px;max-height:260px}
       .filter-btn,.map-refresh{min-height:52px;padding:12px 10px;font-size:16px;border-radius:14px}
       .project-card:hover{transform:none}
       .projects-grid{grid-template-columns:1fr}
@@ -255,10 +261,11 @@
     .phone-ui .section-head p{font-size:17px}
     .phone-ui .refresh-bar{display:none}
     .phone-ui .filters{display:grid;grid-template-columns:1fr 1fr;width:100%;gap:8px}
-    .phone-ui .project-controls{grid-template-columns:1fr}
+    .phone-ui .project-controls{position:sticky;top:8px;z-index:18;grid-template-columns:1fr;background:rgba(255,255,255,.94);box-shadow:0 14px 34px rgba(17,25,63,.13);backdrop-filter:blur(12px)}
     .phone-ui .project-search{border-radius:16px;padding:12px 14px}
     .phone-ui .project-search input{font-size:17px}
     .phone-ui .search-count{width:100%;border-radius:14px;text-align:center}
+    .phone-ui .search-suggestions{right:10px;left:10px;top:68px;max-height:260px}
     .phone-ui .filter-btn,.phone-ui .map-refresh{min-height:52px;padding:12px 10px;font-size:16px;border-radius:14px}
     .phone-ui .projects-grid,.phone-ui .map-shell{grid-template-columns:1fr}
     .phone-ui .project-card{display:block;border-radius:20px}
@@ -342,10 +349,11 @@
       <div class="project-controls">
         <label class="project-search" for="projectSearch">
           <span class="search-icon" aria-hidden="true">⌕</span>
-          <input id="projectSearch" type="search" placeholder="חיפוש מהיר: שם פרויקט, עיר או סטטוס" autocomplete="off" oninput="setProjectSearch(this.value)" onkeydown="handleSearchKey(event)" />
+          <input id="projectSearch" type="search" placeholder="חיפוש מהיר: שם פרויקט, עיר או סטטוס" autocomplete="off" onfocus="renderSearchSuggestions()" oninput="setProjectSearch(this.value)" onkeydown="handleSearchKey(event)" onblur="scheduleSuggestionClose()" />
           <button class="search-clear" id="projectSearchClear" type="button" onclick="clearProjectSearch(event)" aria-label="ניקוי חיפוש">×</button>
         </label>
         <div class="search-count" id="projectSearchCount">מציג את כל הפרויקטים</div>
+        <div class="search-suggestions" id="searchSuggestions"></div>
       </div>
       <div class="refresh-bar">
         <span class="refresh-dot" id="refreshDot"></span>
@@ -513,6 +521,50 @@
       const q=normalizeSearchValue(projectSearchTerm);
       return source.filter(p=>(status==='all'||p.status===status)&&(!q||projectSearchText(p).includes(q)));
     }
+    function searchSuggestions(){
+      const q=normalizeSearchValue(projectSearchTerm);
+      const seen=new Set();
+      const options=[];
+      projects.forEach(p=>{
+        [
+          {label:p.name,meta:p.location||p.status||'פרויקט'},
+          {label:p.location,meta:'אזור'},
+          {label:p.status,meta:'סטטוס'},
+          ...(p.tags||[]).map(t=>({label:t,meta:'תגית'}))
+        ].forEach(item=>{
+          const label=String(item.label||'').trim();
+          const key=normalizeSearchValue(label);
+          if(!label||seen.has(key)) return;
+          if(q&&!key.includes(q)&&!projectSearchText(p).includes(q)) return;
+          seen.add(key);
+          options.push({label,meta:item.meta});
+        });
+      });
+      return options.slice(0,6);
+    }
+    function renderSearchSuggestions(){
+      const box=document.getElementById('searchSuggestions');
+      const input=document.getElementById('projectSearch');
+      if(!box||!input||document.activeElement!==input) return;
+      const opts=searchSuggestions();
+      box.innerHTML=opts.length
+        ?opts.map(o=>`<button class="suggestion-btn" type="button" onmousedown="event.preventDefault()" onclick="chooseSearchSuggestion(decodeURIComponent('${encodeURIComponent(o.label)}'))"><span>${escapeHTML(o.label)}</span><small>${escapeHTML(o.meta)}</small></button>`).join('')
+        :'<div class="suggestion-btn" aria-hidden="true"><span>אין הצעות מתאימות</span><small>נסו עיר, סטטוס או שם פרויקט</small></div>';
+      box.classList.add('open');
+    }
+    function closeSearchSuggestions(){
+      const box=document.getElementById('searchSuggestions');
+      if(box) box.classList.remove('open');
+    }
+    function scheduleSuggestionClose(){ setTimeout(closeSearchSuggestions,160); }
+    function chooseSearchSuggestion(value){
+      const input=document.getElementById('projectSearch');
+      projectSearchTerm=String(value||'');
+      if(input) input.value=projectSearchTerm;
+      renderProjects();
+      closeSearchSuggestions();
+      if(input) input.focus();
+    }
     function updateSearchCount(count,total){
       const el=document.getElementById('projectSearchCount');
       const clear=document.getElementById('projectSearchClear');
@@ -521,10 +573,11 @@
       if(!el) return;
       el.textContent=q?`נמצאו ${count} מתוך ${total}`:`מציג ${count} פרויקטים`;
     }
-    function setProjectSearch(value){ projectSearchTerm=String(value||''); renderProjects(); }
+    function setProjectSearch(value){ projectSearchTerm=String(value||''); renderProjects(); renderSearchSuggestions(); }
     function handleSearchKey(event){
       if(event.key==='Escape'&&projectSearchTerm.trim()){
         clearProjectSearch(event);
+        closeSearchSuggestions();
       }
     }
     function clearProjectSearch(event){
@@ -533,6 +586,7 @@
       const input=document.getElementById('projectSearch');
       if(input) input.value='';
       renderProjects();
+      renderSearchSuggestions();
       if(input) input.focus();
     }
 
@@ -587,7 +641,7 @@
     function setStatusFilter(s){ activeStatusFilter=s; renderProjects(); }
 
     function renderMap(){
-      if(!map){ map=L.map('projects-map',{scrollWheelZoom:false}).setView([31.75,35.05],8); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:18}).addTo(map); }
+      if(!map){ map=L.map('projects-map',{scrollWheelZoom:false}).setView([31.75,35.05],8); L.tileLayer('https:/'+'/{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:18}).addTo(map); }
       mapMarkers.forEach(m=>m.remove()); mapMarkers=[];
       const statuses=[...new Set(projects.map(p=>p.status).filter(Boolean))];
       document.getElementById('mapStatusFilters').innerHTML=[
