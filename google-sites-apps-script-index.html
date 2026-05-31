@@ -87,12 +87,19 @@
     .sheet-status{display:none}
     .filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:0 0 18px}
     .project-controls{display:grid;grid-template-columns:minmax(260px,1fr) auto;gap:12px;align-items:center;margin:0 0 12px;background:rgba(255,255,255,.72);border:1px solid rgba(231,234,240,.86);border-radius:16px;padding:10px;box-shadow:0 8px 22px rgba(17,25,63,.05)}
-    .project-search{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;background:white;border:1px solid var(--line);border-radius:12px;padding:10px 12px;box-shadow:0 8px 20px rgba(17,25,63,.05)}
-    .project-search span{font-weight:900;color:var(--yellow);font-size:18px}
+    .project-search{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;background:white;border:1px solid var(--line);border-radius:12px;padding:10px 12px;box-shadow:0 8px 20px rgba(17,25,63,.05);transition:.2s ease}
+    .project-search:focus-within{border-color:rgba(252,177,39,.9);box-shadow:0 0 0 4px rgba(252,177,39,.16),0 10px 26px rgba(17,25,63,.08)}
+    .search-icon{font-weight:900;color:var(--yellow);font-size:18px}
     .project-search input{border:0;outline:0;background:transparent;font:inherit;font-size:clamp(16px,1.15vw,18px);color:var(--navy);min-width:0}
     .project-search input::placeholder{color:#8992A6}
-    .search-clear{border:0;background:#F3F5F9;color:#536078;border-radius:10px;padding:8px 12px;font-weight:900;font-family:inherit;cursor:pointer}
+    .search-clear{border:0;background:#F3F5F9;color:#536078;border-radius:999px;width:34px;height:34px;font-weight:900;font-family:inherit;cursor:pointer;display:none;align-items:center;justify-content:center;font-size:18px;line-height:1}
+    .search-clear.visible{display:inline-flex}
+    .search-clear:hover{background:#E9EDF5;color:var(--navy)}
     .search-count{color:#596579;font-size:13px;font-weight:800;background:white;border:1px solid var(--line);border-radius:999px;padding:9px 14px;white-space:nowrap}
+    .empty-state{grid-column:1/-1;background:white;border:1px dashed #C9D1DF;border-radius:16px;padding:32px 22px;text-align:center;color:#58647A}
+    .empty-state h2{font-size:clamp(24px,2vw,30px);color:var(--navy);margin-bottom:8px}
+    .empty-state p{font-size:16px;margin-bottom:16px}
+    .empty-state .btn{width:min(240px,100%)}
     .filter-btn,.map-refresh{border:1px solid #D9DFEA;background:white;color:var(--ink);border-radius:10px;padding:11px 16px;font-size:clamp(14px,1vw,16px);font-weight:900;font-family:inherit;cursor:pointer;box-shadow:0 6px 16px rgba(17,25,63,.04);transition:.2s ease;min-height:44px}
     .filter-btn:hover,.filter-btn.active{background:var(--navy);border-color:var(--navy);color:white;box-shadow:0 10px 24px rgba(17,25,63,.14)}
     .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--navy);border-radius:10px;background:var(--navy);color:#fff;font-size:clamp(15px,1.05vw,17px);font-weight:900;padding:13px 16px;cursor:pointer;transition:.2s ease;min-height:48px;box-shadow:0 10px 22px rgba(17,25,63,.12)}
@@ -334,9 +341,9 @@
       </div>
       <div class="project-controls">
         <label class="project-search" for="projectSearch">
-          <span aria-hidden="true">⌕</span>
-          <input id="projectSearch" type="search" placeholder="חיפוש לפי פרויקט, אזור או סטטוס" autocomplete="off" oninput="setProjectSearch(this.value)" />
-          <button class="search-clear" type="button" onclick="clearProjectSearch(event)">נקה</button>
+          <span class="search-icon" aria-hidden="true">⌕</span>
+          <input id="projectSearch" type="search" placeholder="חיפוש מהיר: שם פרויקט, עיר או סטטוס" autocomplete="off" oninput="setProjectSearch(this.value)" onkeydown="handleSearchKey(event)" />
+          <button class="search-clear" id="projectSearchClear" type="button" onclick="clearProjectSearch(event)" aria-label="ניקוי חיפוש">×</button>
         </label>
         <div class="search-count" id="projectSearchCount">מציג את כל הפרויקטים</div>
       </div>
@@ -508,16 +515,25 @@
     }
     function updateSearchCount(count,total){
       const el=document.getElementById('projectSearchCount');
+      const clear=document.getElementById('projectSearchClear');
+      const q=projectSearchTerm.trim();
+      if(clear) clear.classList.toggle('visible',!!q);
       if(!el) return;
-      el.textContent=projectSearchTerm.trim()?`מציג ${count} מתוך ${total}`:`מציג ${count} פרויקטים`;
+      el.textContent=q?`נמצאו ${count} מתוך ${total}`:`מציג ${count} פרויקטים`;
     }
     function setProjectSearch(value){ projectSearchTerm=String(value||''); renderProjects(); }
+    function handleSearchKey(event){
+      if(event.key==='Escape'&&projectSearchTerm.trim()){
+        clearProjectSearch(event);
+      }
+    }
     function clearProjectSearch(event){
       if(event) event.preventDefault();
       projectSearchTerm='';
       const input=document.getElementById('projectSearch');
       if(input) input.value='';
       renderProjects();
+      if(input) input.focus();
     }
 
     function cardTemplate(p,i){
@@ -561,8 +577,8 @@
         ...statuses.map(s=>`<button class="filter-btn ${activeStatusFilter===s?'active':''}" type="button" onclick="setStatusFilter('${escapeHTML(s)}')">${escapeHTML(s)}</button>`)
       ].join('');
       document.getElementById('projectCards').innerHTML=projects.length
-        ?(vis.length?vis.map(p=>cardTemplate(p,projects.indexOf(p))).join(''):`<div style="grid-column:1/-1;text-align:center;padding:40px"><h2>אין פרויקטים בסטטוס זה</h2></div>`)
-        :`<div style="grid-column:1/-1;text-align:center;padding:40px"><h2>לא נמצאו פרויקטים</h2></div>`;
+        ?(vis.length?vis.map(p=>cardTemplate(p,projects.indexOf(p))).join(''):`<div class="empty-state"><h2>לא נמצאו פרויקטים</h2><p>נסו שם פרויקט, עיר או סטטוס אחר.</p><button class="btn btn-light" type="button" onclick="clearProjectSearch(event)">ניקוי חיפוש</button></div>`)
+        :`<div class="empty-state"><h2>לא נמצאו פרויקטים</h2><p>בדקו שהטוקן והלקוח תקינים.</p></div>`;
       updateSearchCount(vis.length,projects.length);
       updateCountdowns();
       renderMap();
