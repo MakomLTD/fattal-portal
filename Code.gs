@@ -1,14 +1,26 @@
 // =====================================================
-//  MAKOM – פורטל פרויקטים פתאל | Google Apps Script
-//  Code.gs  v3.0
+//  MAKOM – פורטל פרויקטים | Google Apps Script
+//  Code.gs  v4.0
+//
+//  ★ שלב אחד בלבד לפני שהכל עובד:
+//    1. פתחו Apps Script Editor → הדביקו קוד זה
+//    2. הפעילו את הפונקציה fullSetup() (▶ Run)
+//    3. אשרו הרשאות
+//    4. פרסו: Deploy → New Deployment → Web App → Anyone
+//    5. העתיקו את ה-URL לכלי מחולל הקישורים
 // =====================================================
 
-const SPREADSHEET_ID = 'PASTE_GOOGLE_SHEET_ID_HERE';
-const SHEET_NAME     = 'projects';
+const SHEET_NAME = 'projects';
+
+// קורא SPREADSHEET_ID מ-Script Properties (נשמר על-ידי fullSetup)
+function getSpreadsheetId_() {
+  return PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID') || '';
+}
 
 // ─── נקודת כניסה ─────────────────────────────────────
 function doGet(e) {
   const params = e && e.parameter ? e.parameter : {};
+  const SPREADSHEET_ID = getSpreadsheetId_();
 
   // [1] JSON API — לרענון חי מצד הלקוח
   if (params.action === 'data') {
@@ -57,7 +69,8 @@ function doGet(e) {
 
 // ─── שכבת נתונים ──────────────────────────────────────
 function getProjects_(params) {
-  if (!SPREADSHEET_ID || SPREADSHEET_ID === 'PASTE_GOOGLE_SHEET_ID_HERE') {
+  const SPREADSHEET_ID = getSpreadsheetId_();
+  if (!SPREADSHEET_ID) {
     return getSampleProjects_();
   }
 
@@ -104,6 +117,7 @@ function rowToObject_(headers) {
 function normalizeHeader_(header) {
   const clean = String(header || '').trim();
   const map = {
+    // עברית → שם פנימי
     'לקוח':'client_id', 'מזהה לקוח':'client_id',
     'טוקן':'token',
     'פעיל':'active',
@@ -122,6 +136,7 @@ function normalizeHeader_(header) {
     'התקדמות':'progress', 'אחוז התקדמות':'progress',
     'סיכון':'risk',       'רמת סיכון':'risk',
     'פעולה הבאה':'next_step', 'צעד הבא':'next_step',
+    // אנגלית pass-through
     'client_id':'client_id', 'token':'token', 'active':'active',
     'project_name':'project_name', 'status':'status', 'description':'description',
     'site_url':'site_url', 'youtube_url':'youtube_url', 'image_url':'image_url',
@@ -132,7 +147,7 @@ function normalizeHeader_(header) {
   return map[clean] || clean;
 }
 
-// ─── נתוני ברירת מחדל ──
+// ─── נתוני ברירת מחדל (כאשר fullSetup טרם הופעל) ──────
 function getSampleProjects_() {
   return [
     {
@@ -165,13 +180,55 @@ function getSampleProjects_() {
   ];
 }
 
-// ─── הגדרת ה-Sheet (הפעל פעם אחת מ-Apps Script Editor) ──
+// ─── הגדרת ה-Sheet (כשה-ID כבר שמור) ────────────────────
 function setupSheet() {
-  if (!SPREADSHEET_ID || SPREADSHEET_ID === 'PASTE_GOOGLE_SHEET_ID_HERE') {
-    throw new Error('קודם עדכנו את SPREADSHEET_ID בקוד.');
+  const SPREADSHEET_ID = getSpreadsheetId_();
+  if (!SPREADSHEET_ID) {
+    throw new Error('הפעל קודם fullSetup() — לא נמצא SPREADSHEET_ID בהגדרות.');
   }
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  _populateSheet_(ss);
+}
+
+// ─── הקסם: יצירת הכל אוטומטית (פעם אחת בלבד) ──────────
+function fullSetup() {
+  const props = PropertiesService.getScriptProperties();
+
+  // 1. צור תיקיית דרייב (או מצא קיימת)
+  const existing = DriveApp.getFoldersByName('MAKOM פורטל');
+  const folder = existing.hasNext() ? existing.next() : DriveApp.createFolder('MAKOM פורטל');
+  Logger.log('📁 תיקייה: ' + folder.getUrl());
+
+  // 2. צור את ה-Sheet בתוך התיקייה
+  const tempSs = SpreadsheetApp.create('MAKOM פורטל – פרויקטים');
+  const ssFile = DriveApp.getFileById(tempSs.getId());
+  ssFile.moveTo(folder);
+  ssFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+
+  const sheetId = tempSs.getId();
+  props.setProperty('SPREADSHEET_ID', sheetId);
+  Logger.log('📊 Sheet ID: ' + sheetId);
+  Logger.log('📊 Sheet URL: ' + tempSs.getUrl());
+
+  // 3. אכלס נתוני דמה
+  _populateSheet_(tempSs);
+
+  Logger.log('');
+  Logger.log('✅ הכל מוכן!');
+  Logger.log('👉 עכשיו פרסם: Deploy → New Deployment → Web App → Anyone');
+  Logger.log('👉 העתק את ה-Web App URL לכלי מחולל הקישורים.');
+}
+
+// ─── מאכלס Sheet בכותרות ונתוני דמה ─────────────────────
+function _populateSheet_(ss) {
   let sheet = ss.getSheetByName(SHEET_NAME) || ss.insertSheet(SHEET_NAME);
+  const sheets = ss.getSheets();
+  if (sheets.length > 1) {
+    const blankSheet = sheets.find(function(s) {
+      return s.getName() === 'Sheet1' || s.getName() === 'גיליון1';
+    });
+    if (blankSheet) try { ss.deleteSheet(blankSheet); } catch(e) {}
+  }
   sheet.clear();
 
   const headers = [
@@ -195,19 +252,22 @@ function setupSheet() {
      'תל אביב','32.0853','34.7818','2027-02-28','','אתר פרויקט|מסמכים|עדכונים','28','נמוך','התחלת שלב ב']
   ];
 
-  sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+  sheet.getRange(1, 1, 1, headers.length).setValues([headers])
+    .setFontWeight('bold').setBackground('#11193F').setFontColor('#FFFFFF');
   sheet.getRange(2, 1, rows.length, headers.length).setValues(rows);
   sheet.setFrozenRows(1);
   sheet.autoResizeColumns(1, headers.length);
-  Logger.log('✅ Sheet setup complete — ' + rows.length + ' rows written');
+  Logger.log('✅ נכתבו ' + rows.length + ' פרויקטי דמה ל-Sheet');
 }
 
+// ─── debug ───────────────────────────────────────────
 function debugProjects() {
   const rows = getProjects_({ client: 'fattal', token: 'abc123' });
   Logger.log(JSON.stringify(rows, null, 2));
   return rows;
 }
 
+// ─── helpers ─────────────────────────────────────────
 function jsonResponse_(payload) {
   return ContentService
     .createTextOutput(JSON.stringify(payload))
