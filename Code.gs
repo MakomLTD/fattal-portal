@@ -298,8 +298,8 @@ function setManagerKey(key) {
   if (normalized.length < 32) {
     throw new Error('Manager Key חייב להיות באורך מינימלי של 32 תווים');
   }
-  if (!/[a-z]/.test(normalized) || !/[A-Z]/.test(normalized) || !/[0-9]/.test(normalized)) {
-    throw new Error('Manager Key חייב לכלול אות קטנה, אות גדולה ומספר');
+  if (!/[a-z]/.test(normalized) || !/[A-Z]/.test(normalized) || !/[0-9]/.test(normalized) || !/[^A-Za-z0-9]/.test(normalized)) {
+    throw new Error('Manager Key חייב לכלול אות קטנה, אות גדולה, מספר ותו מיוחד');
   }
   PropertiesService.getScriptProperties().setProperty('MANAGER_KEY', normalized);
 }
@@ -313,10 +313,10 @@ function isManagerAuthorized_(params) {
 function timingSafeEqual_(left, right) {
   const a = String(left || '');
   const b = String(right || '');
-  if (a.length !== b.length) return false;
-  let diff = 0;
-  for (let i = 0; i < a.length; i++) {
-    diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  const maxLen = Math.max(a.length, b.length);
+  let diff = a.length ^ b.length;
+  for (let i = 0; i < maxLen; i++) {
+    diff |= (a.charCodeAt(i) || 0) ^ (b.charCodeAt(i) || 0);
   }
   return diff === 0;
 }

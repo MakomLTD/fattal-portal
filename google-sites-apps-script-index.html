@@ -165,7 +165,7 @@
       <div class="top-actions">
         <button class="pill" type="button" onclick="scrollToSection('projects')">פרויקטים</button>
         <button class="pill" type="button" onclick="scrollToSection('map')">מפה</button>
-        <button class="pill hidden" id="managerScreenBtn" type="button" onclick="toggleManagerPanel()" aria-label="מסך עדכון ערכים למנהלי פרויקטים מורשים">ניהול ערכים</button>
+        <button class="pill hidden" id="managerScreenBtn" type="button" onclick="toggleManagerPanel()" aria-label="מסך עדכון ערכים למנהלי פרויקטים מורשים" title="גישה למנהלי פרויקטים מורשים בלבד">ניהול ערכים</button>
       </div>
     </header>
 
@@ -559,7 +559,7 @@
           token:TOKEN_ID
         })
       });
-      if(!res.ok) throw new Error('HTTP '+res.status);
+      if(!res.ok) throw new Error('HTTP '+res.status+' '+(res.statusText||''));
       const data=await res.json();
       if(!data.ok) throw new Error(data.error||'שגיאת מנהל');
       managerProjects=Array.isArray(data.projects)?data.projects:[];
@@ -602,7 +602,7 @@
         await loadManagerProjects();
       }catch(e){
         console.error(e);
-        setManagerStatus('שמירה נכשלה: ' + (e && e.message ? e.message : ''));
+        setManagerStatus('שמירה נכשלה: ' + (e && e.message ? e.message : 'שגיאה לא ידועה'));
       }
     }
 
