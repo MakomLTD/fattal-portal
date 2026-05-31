@@ -50,10 +50,12 @@ function doGet(e) {
   // [3] תבנית HTML מלאה
   try {
     const template = HtmlService.createTemplateFromFile('index');
-    template.projectsJson = JSON.stringify(getProjects_(params));
-    template.scriptUrl    = ScriptApp.getService().getUrl();
-    template.clientId     = params.client || '';
-    template.tokenId      = params.token  || '';
+    template.projectsData = encodeTemplateData_(getProjects_(params));
+    template.configData   = encodeTemplateData_({
+      scriptUrl: ScriptApp.getService().getUrl(),
+      clientId: params.client || '',
+      tokenId: params.token || ''
+    });
 
     return template
       .evaluate()
@@ -272,6 +274,10 @@ function jsonResponse_(payload) {
   return ContentService
     .createTextOutput(JSON.stringify(payload))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+function encodeTemplateData_(payload) {
+  return Utilities.base64EncodeWebSafe(JSON.stringify(payload || null), Utilities.Charset.UTF_8);
 }
 
 function buildErrorHtml_(error) {

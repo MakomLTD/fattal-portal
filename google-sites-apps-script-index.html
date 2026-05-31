@@ -139,8 +139,7 @@
   </style>
 </head>
 <body>
-  <script>window.__PORTAL_CFG__={scriptUrl:'<?= scriptUrl ?>',clientId:'<?= clientId ?>',tokenId:'<?= tokenId ?>'}</script>
-  <script id="sheet-projects-json" type="application/json"><?!= projectsJson || '[]' ?></script>
+  <div id="portal-template-data" hidden data-config="<?= configData ?>" data-projects="<?= projectsData ?>"></div>
   <div id="appError" class="app-error" role="alert"></div>
   <main class="page">
     <header class="topbar">
@@ -249,27 +248,33 @@
   <script>
     function scrollToSection(id){ const el=document.getElementById(id); if(el) el.scrollIntoView({behavior:'smooth',block:'start'}); }
 
-    const _CFG       = window.__PORTAL_CFG__ || {};
+    function decodeTemplateData(value, fallback){
+      if(!value || value.startsWith('<?')) return fallback;
+      try{
+        const normalized = value.replace(/-/g,'+').replace(/_/g,'/');
+        const padded = normalized + '='.repeat((4 - normalized.length % 4) % 4);
+        const binary = atob(padded);
+        const bytes = Uint8Array.from(binary, ch => ch.charCodeAt(0));
+        return JSON.parse(new TextDecoder().decode(bytes));
+      }catch(e){
+        return fallback;
+      }
+    }
+
+    const _DATA      = document.getElementById('portal-template-data');
+    const _CFG       = decodeTemplateData(_DATA && _DATA.dataset.config, {});
     const SCRIPT_URL = _CFG.scriptUrl || '';
     const CLIENT_ID  = _CFG.clientId  || '';
     const TOKEN_ID   = _CFG.tokenId   || '';
     const REFRESH_MS = 5 * 60 * 1000;
 
-    const PROJECTS_FROM_SHEET = readProjectsFromTemplate();
+    const PROJECTS_FROM_SHEET = decodeTemplateData(_DATA && _DATA.dataset.projects, []);
 
     const fallbackProjects = [
       { client:'fattal', name:'לאונרדו קלאב ים המלח', location:'ים המלח', lat:31.2, lng:35.3667, status:'בביצוע', badge:'סטטוס: בביצוע', plannedEndDate:'2026-12-31', actualEndDate:'', desc:'אתר פרויקט המרכז את סטטוס העבודות, תיעוד מהשטח ומסמכים רלוונטיים.', tags:['אתר פרויקט','מסמכים','עדכונים'], link:'https://sites.google.com/makomltd.com/fattal-dead-sea/', youtubeUrl:'', image:'https://fattal-cms-prod.s3.eu-central-1.amazonaws.com/2_e113a6719b.jpg', progress:45, risk:'בינוני', nextStep:'תיאום עם קבלן ראשי' },
       { client:'fattal', name:'לאונרדו פלאזה ירושלים', location:'ירושלים', lat:31.7683, lng:35.2137, status:'בביצוע', badge:'סטטוס: בביצוע', plannedEndDate:'2026-10-31', actualEndDate:'', desc:'ריכוז דוחות ביצוע לפי קומות, סטטוס חדרים וצווארי בקבוק.', tags:['אתר פרויקט','מסמכים','עדכונים'], link:'https://sites.google.com/makomltd.com/leonardo-jerusalem-fattal/', youtubeUrl:'', image:'', progress:62, risk:'גבוה', nextStep:'בדיקת איכות שלב ג\'' },
       { client:'fattal', name:'מלון פלטין תל אביב', location:'תל אביב', lat:32.0853, lng:34.7818, status:'בביצוע', badge:'סטטוס: בביצוע', plannedEndDate:'2027-02-28', actualEndDate:'', desc:'כניסה לאזור הפרויקט לצפייה בעדכונים, קבצים ותמונות.', tags:['אתר פרויקט','מסמכים','עדכונים'], link:'https://sites.google.com/makomltd.com/fattal-palatin', youtubeUrl:'', image:'', progress:28, risk:'נמוך', nextStep:'התחלת שלב ב\'' }
     ];
-
-    function readProjectsFromTemplate(){
-      const el = document.getElementById('sheet-projects-json');
-      if(!el) return [];
-      const raw = (el.textContent || '').trim();
-      if(!raw || raw.startsWith('<?')) return [];
-      try { const p = JSON.parse(raw); return Array.isArray(p) ? p : []; } catch(e) { return []; }
-    }
 
     function showAppError(msg){ const el=document.getElementById('appError'); if(el){ el.textContent=msg; el.classList.add('open'); } }
 
