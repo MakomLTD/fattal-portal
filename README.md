@@ -30,5 +30,14 @@ client_id | token | active | project_name | status | description | site_url | yo
 - `risk` — נמוך / בינוני / גבוה
 - `active` — TRUE / FALSE
 
+## ניהול שוטף מסודר
+
+- **מקור המידע היחיד**: כל נתוני הפרויקטים נשמרים בגיליון Google Sheet — כל שורת פרויקט מתעדכנת שם בלבד.
+- **מקור הלינקים ללקוחות**: `portal-link-generator.html` שומר בדפדפן את כתובת ה-Web App, מזהי הלקוחות, הטוקנים, הלינק הישיר וה-Embed לכל לקוח.
+- **פורמט הלינק ללקוח**: `WEB_APP_URL?client=CLIENT_ID&token=TOKEN`
+- **עדכון תוכן שוטף**: כשמשנים סטטוס, תיאור, תאריך או מיקום — מעדכנים רק את הגיליון והפורטל מושך את המידע מחדש.
+- **עדכון קוד / UI**: כשמשנים את `Code.gs` או `google-sites-apps-script-index.html` צריך לבצע Deploy מחדש ל-Web App, ואז להדביק את ה-URL המעודכן במחולל הקישורים.
+- **סדר עבודה מומלץ**: Sheet לניהול מידע, generator לניהול לקוחות וקישורים, Google Sites להטמעה בלבד.
+
 ---
 מופעל על ידי **MAKOM LTD**
