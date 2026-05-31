@@ -118,11 +118,6 @@
     .site-footer strong{color:#5B6FE8}
     .app-error{display:none;margin:0 auto 18px;max-width:1320px;border:1px solid rgba(224,90,71,.28);background:#FDEDEA;color:#7A2B21;border-radius:14px;padding:12px 16px;font-size:14px;font-weight:800}
     .app-error.open{display:block}
-    .progress-wrap{margin:10px 0 14px}
-    .progress-header{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:800;color:#596579;margin-bottom:5px}
-    .progress-track{background:#E8EBF1;border-radius:999px;height:9px;overflow:hidden}
-    .progress-fill{height:100%;border-radius:999px;background:var(--green);transition:width .6s ease}
-    .progress-fill.risk-high{background:var(--red)}.progress-fill.risk-med{background:var(--yellow)}
     .risk-badge{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:4px 10px;font-size:11px;font-weight:800;margin-bottom:8px}
     .risk-low{background:#E8F8EF;color:#1E7A48}.risk-med{background:#FFF7E2;color:#7A5B1D}.risk-high{background:#FDEDEA;color:#7A2B21}
     .refresh-bar{display:flex;align-items:center;gap:10px;padding:9px 16px;background:white;border:1px solid var(--line);border-radius:999px;font-size:13px;font-weight:700;color:#596579;margin-bottom:20px;width:fit-content}
@@ -328,10 +323,9 @@
     function updateCountdowns(){ document.querySelectorAll('[data-end-date]').forEach(el=>{ const d=countdownText(el.dataset.endDate); el.classList.toggle('overdue',d.overdue); el.querySelector('.countdown-label').innerText=d.label; el.querySelector('.countdown-value').innerHTML=d.value; }); }
 
     function riskClass(r){ r=String(r||'').trim(); if(r==='גבוה'||r.toLowerCase()==='high') return 'risk-high'; if(r==='בינוני'||r.toLowerCase()==='medium') return 'risk-med'; return 'risk-low'; }
-    function riskFillClass(r){ r=String(r||'').trim(); if(r==='גבוה'||r.toLowerCase()==='high') return 'risk-high'; if(r==='בינוני'||r.toLowerCase()==='medium') return 'risk-med'; return ''; }
 
     function cardTemplate(p,i){
-      const se=String(p.actualEndDate||'').replace(/"/g,'&quot;'), pct=p.progress||0;
+      const se=String(p.actualEndDate||'').replace(/"/g,'&quot;');
       const rh=p.risk?`<span class="risk-badge ${riskClass(p.risk)}">⬤ סיכון ${escapeHTML(p.risk)}</span>`:'';
       return `<article class="project-card" onclick="openProject(${i})">
         <div class="project-image" style="background-image:url('${escapeHTML(p.image)}')">
@@ -345,10 +339,6 @@
             <div class="tags" style="margin:0">${p.tags.map(t=>`<span class="tag">${escapeHTML(t)}</span>`).join('')}</div>${rh}
           </div>
           <p>${escapeHTML(p.desc)}</p>
-          <div class="progress-wrap">
-            <div class="progress-header"><span>התקדמות</span><span>${pct}%</span></div>
-            <div class="progress-track"><div class="progress-fill ${riskFillClass(p.risk)}" style="width:${pct}%"></div></div>
-          </div>
           <div class="mini-kpis">
             <div class="mini-kpi"><strong>${escapeHTML(p.location||'-')}</strong><span>מיקום</span></div>
             <div class="mini-kpi"><strong>${escapeHTML(p.plannedEndDate||'-')}</strong><span>סיום מתוכנן</span></div>
