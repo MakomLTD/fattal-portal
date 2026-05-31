@@ -284,7 +284,7 @@
     <div class="card" style="margin-top:16px">
       <h2><span>🔁</span> חיבור ל-Google Apps Script עם Push (clasp)</h2>
       <p style="margin:8px 0 12px;color:var(--muted);font-size:13px">
-        אופציונלי: אם רוצים לעבוד מה-Repo ולעשות Push ישיר ל-Apps Script עם מיפוי אוטומטי ל-<code>index.html</code>.
+        אופציונלי: אם רוצים לעבוד מה-Repo ולעשות Push ישיר ל-Apps Script עם מיפוי אוטומטי של <code>google-sites-apps-script-index.html</code> ל-<code>index.html</code>.
       </p>
       <div class="field">
         <label>Script ID של פרויקט ה-Apps Script</label>
@@ -425,8 +425,8 @@
     document.getElementById('claspPushCmd').textContent =
 `npm i -g @google/clasp
 clasp login
-test -f Code.gs || { echo 'Error: Code.gs not found. Make sure it exists in the current folder before running clasp push.'; exit 1; }
-test -f google-sites-apps-script-index.html || { echo 'Error: google-sites-apps-script-index.html not found. Make sure it exists in the current folder before running clasp push.'; exit 1; }
+test -f Code.gs || { echo 'Error: Code.gs not found. Make sure it exists in the current folder to continue with push.'; exit 1; }
+test -f google-sites-apps-script-index.html || { echo 'Error: google-sites-apps-script-index.html not found. Make sure it exists in the current folder to continue with push.'; exit 1; }
 rm -rf .apps-script-push
 mkdir -p .apps-script-push
 cp Code.gs .apps-script-push/Code.gs
