@@ -11,10 +11,11 @@
 // =====================================================
 
 const SHEET_NAME = 'projects';
+const DEFAULT_SPREADSHEET_ID = '1zJuPktt0sacLfRXEvq-Ku2yfRnk0diT5t4ahWSH29io';
 
 // קורא SPREADSHEET_ID מ-Script Properties (נשמר על-ידי fullSetup)
 function getSpreadsheetId_() {
-  return PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID') || '';
+  return PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID') || DEFAULT_SPREADSHEET_ID;
 }
 
 // ─── נקודת כניסה ─────────────────────────────────────
@@ -77,8 +78,9 @@ function getProjects_(params) {
     return getSampleProjects_();
   }
 
-  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAME);
-  if (!sheet) throw new Error('לא נמצא גיליון בשם "' + SHEET_NAME + '"');
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = ss.getSheetByName(SHEET_NAME) || ss.getSheets()[0];
+  if (!sheet) throw new Error('לא נמצא גיליון נתונים');
 
   const values = sheet.getDataRange().getDisplayValues();
   if (values.length < 2) return [];
