@@ -49,16 +49,17 @@ function doGet(e) {
 
   // [3] תבנית HTML מלאה
   try {
-    const template = HtmlService.createTemplateFromFile('index');
-    template.projectsData = encodeTemplateData_(getProjects_(params));
-    template.configData   = encodeTemplateData_({
+    const html = renderIndexHtml_({
+      projectsData: encodeTemplateData_(getProjects_(params)),
+      configData: encodeTemplateData_({
       scriptUrl: ScriptApp.getService().getUrl(),
       clientId: params.client || '',
       tokenId: params.token || ''
+      })
     });
 
-    return template
-      .evaluate()
+    return HtmlService
+      .createHtmlOutput(html)
       .setTitle('פורטל בקרת פרויקטים')
       .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
   } catch (error) {
@@ -278,6 +279,13 @@ function jsonResponse_(payload) {
 
 function encodeTemplateData_(payload) {
   return Utilities.base64EncodeWebSafe(JSON.stringify(payload || null), Utilities.Charset.UTF_8);
+}
+
+function renderIndexHtml_(data) {
+  const html = HtmlService.createHtmlOutputFromFile('index').getContent();
+  return html
+    .replace(/__CONFIG_DATA__/g, escapeHtml_(data.configData || ''))
+    .replace(/__PROJECTS_DATA__/g, escapeHtml_(data.projectsData || ''));
 }
 
 function buildErrorHtml_(error) {
