@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>פורטל בקרת פרויקטים | MAKOM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Hebrew:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    :root{
+      --navy:#11193F;--yellow:#FCB127;--bg:#F5F6FA;--muted:#6B7280;
+      --card:#FFFFFF;--line:#E7EAF0;--green:#2FB66D;--red:#E05A47;
+      --blue:#3967E8;--soft:#EEF2F7;--ink:#27314D;--warning:#B7791F;
+      --shadow:0 18px 45px rgba(17,25,63,.12);--radius:26px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{font-family:'Noto Sans Hebrew','Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--navy);line-height:1.55;min-height:100vh}
+    a{text-decoration:none;color:inherit}
+    .page{max-width:1320px;margin:0 auto;padding:28px 28px 70px}
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:22px}
+    .brand{display:flex;align-items:center;gap:14px;font-weight:900;font-size:18px}
+    .brand-mark{height:52px;min-width:150px;border-radius:14px;background:var(--navy);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow);padding:8px 14px}
+    .makom-logo-svg{width:132px;max-width:100%;height:auto;display:block}
+    .makom-logo-white{fill:#fff}.makom-logo-yellow{fill:var(--yellow)}
+    .client-logo{height:52px;max-width:158px;object-fit:contain;background:white;border:1px solid var(--line);border-radius:12px;padding:8px 12px;box-shadow:0 4px 14px rgba(0,0,0,.05)}
+    .top-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .pill{border:1px solid var(--line);background:white;border-radius:999px;padding:9px 16px;font-size:14px;color:#333;box-shadow:0 4px 14px rgba(0,0,0,.04);cursor:pointer;font-family:inherit}
+    .pill:hover{background:#F8FAFF;color:var(--navy)}
+    .hero{position:relative;overflow:hidden;background:var(--navy);color:#fff;border-radius:28px;padding:58px 64px;min-height:260px;box-shadow:var(--shadow)}
+    .hero:before{content:"";position:absolute;width:250px;height:250px;border-radius:50%;background:rgba(252,177,39,.16);top:-90px;left:-70px}
+    .hero-content{position:relative;z-index:1;display:block;max-width:760px;margin-inline-start:auto;text-align:right}
+    h1{font-size:clamp(36px,5.4vw,68px);line-height:1.08;margin-bottom:20px;font-weight:900}
+    .hero p{font-size:clamp(16px,1.7vw,21px);color:rgba(255,255,255,.9);max-width:760px;font-weight:500}
+    .section-head{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;margin:34px 0 18px}
+    .section-head h2{font-size:clamp(28px,3.2vw,38px);line-height:1.15;font-weight:900}
+    .section-head p{color:#5C667A;max-width:700px;font-size:clamp(15px,1.3vw,18px)}
+    .projects-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+    .project-card{background:var(--card);border-radius:18px;overflow:hidden;box-shadow:0 12px 30px rgba(17,25,63,.09);border:1px solid rgba(231,234,240,.95);transition:.25s ease;cursor:pointer;position:relative}
+    .project-card:hover{transform:translateY(-5px);box-shadow:0 24px 55px rgba(17,25,63,.18)}
+    .project-image{height:186px;background-size:cover;background-position:center;position:relative;overflow:hidden}
+    .project-image:before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(17,25,63,.92),rgba(17,25,63,.45) 48%,rgba(255,255,255,.03))}
+    .status-badge{position:absolute;top:18px;right:18px;background:white;color:var(--navy);font-weight:800;border-radius:999px;padding:8px 16px;font-size:13px;z-index:1;box-shadow:0 8px 22px rgba(0,0,0,.16)}
+    .project-title{position:absolute;right:22px;bottom:22px;color:#fff;font-size:23px;font-weight:900;z-index:1;text-shadow:0 2px 12px rgba(0,0,0,.4)}
+    .project-status-line{position:absolute;right:22px;bottom:58px;color:#fff;background:rgba(17,25,63,.72);border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:5px 12px;font-size:13px;font-weight:800;z-index:1;backdrop-filter:blur(5px)}
+    .card-body{padding:18px}
+    .tags{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:13px}
+    .tag{background:#F1F3F7;color:#3C465C;border-radius:999px;padding:6px 11px;font-size:12px;font-weight:700}
+    .project-meta{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;font-weight:700;margin-bottom:10px}
+    .meta-dot{width:7px;height:7px;background:var(--yellow);border-radius:50%;display:inline-block}
+    .card-body p{color:#3E485B;margin-bottom:14px;min-height:48px}
+    .mini-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+    .mini-kpi{background:#F7F8FB;border-radius:12px;padding:10px;text-align:center;border:1px solid #DFE5EE}
+    .mini-kpi strong{display:block;font-size:15px;color:var(--ink)}
+    .mini-kpi span{display:block;font-size:11px;color:#596579;font-weight:700}
+    .countdown{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;background:#FFF6E2;border:1px solid rgba(252,177,39,.55);border-radius:14px;padding:12px 14px;margin-bottom:14px;color:#4E3710}
+    .stopwatch{width:24px;height:24px;border:3px solid var(--navy);border-radius:50%;position:relative;background:white}
+    .stopwatch:before{content:"";position:absolute;top:-7px;left:50%;width:10px;height:6px;border-radius:6px 6px 2px 2px;background:var(--navy);transform:translateX(-50%)}
+    .stopwatch:after{content:"";position:absolute;right:50%;bottom:50%;width:2px;height:8px;background:var(--yellow);transform-origin:bottom center;animation:tick 1.2s linear infinite}
+    @keyframes tick{to{transform:rotate(360deg)}}
+    .countdown-label{font-size:12px;font-weight:800;color:#7A5B1D}
+    .countdown-value{display:flex;flex-direction:column;align-items:flex-start;gap:2px;font-size:20px;font-weight:900;color:var(--navy);font-variant-numeric:tabular-nums;text-align:left;white-space:nowrap;direction:ltr;unicode-bidi:isolate}
+    .countdown-clock{font-size:22px}.countdown-days{font-size:18px}
+    .countdown.overdue{background:#FDEDEA;border-color:rgba(224,90,71,.35);color:#7A2B21}
+    .countdown.overdue .countdown-label{color:#8A3328}
+    .countdown.overdue .countdown-value{color:var(--red)}
+    .sheet-status{display:none}
+    .filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:0 0 18px}
+    .filter-btn,.map-refresh{border:1px solid #D9DFEA;background:white;color:var(--ink);border-radius:12px;padding:10px 16px;font-weight:900;font-family:inherit;cursor:pointer;box-shadow:0 6px 16px rgba(17,25,63,.05);transition:.2s ease;min-height:40px}
+    .filter-btn:hover,.filter-btn.active{background:var(--navy);border-color:var(--navy);color:white;box-shadow:0 10px 24px rgba(17,25,63,.14)}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--navy);border-radius:14px;background:var(--navy);color:#fff;font-weight:900;padding:13px 18px;cursor:pointer;transition:.2s ease;min-height:48px;box-shadow:0 10px 22px rgba(17,25,63,.12)}
+    .btn:hover{filter:brightness(1.06);transform:translateY(-1px)}
+    .btn-yellow{background:var(--yellow);border-color:var(--yellow);color:var(--navy)}
+    .btn-light{background:white;color:var(--navy);border:1px solid #D9DFEA}
+    .full{width:100%}
+    .map-shell{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:18px;align-items:stretch}
+    #projects-map{width:100%;height:520px;border-radius:18px;overflow:hidden;box-shadow:var(--shadow);border:1px solid var(--line);background:#ddd}
+    .map-wrap{position:relative}
+    .map-label{position:absolute;right:50%;bottom:16px;transform:translateX(50%);z-index:800;background:white;border-radius:999px;padding:9px 18px;font-weight:800;box-shadow:0 10px 24px rgba(0,0,0,.13);color:#6B7280;white-space:nowrap}
+    .map-label strong{color:#5B6FE8}
+    .map-panel{background:white;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:18px;min-height:520px;display:flex;flex-direction:column}
+    .map-panel h3{font-size:21px;margin-bottom:5px}
+    .map-panel p{color:#566176;font-size:13px;margin-bottom:14px}
+    .map-tools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+    .map-tools .filter-btn,.map-tools .map-refresh{padding:8px 12px;font-size:12px}
+    .map-refresh{background:var(--yellow);border-color:var(--yellow);color:var(--navy)}
+    .map-refresh:hover{filter:brightness(.97);transform:translateY(-1px)}
+    .map-list{display:grid;gap:10px;overflow:auto;padding-left:4px}
+    .map-project{width:100%;border:1px solid var(--line);background:#F8FAFC;color:var(--navy);border-radius:14px;padding:13px;text-align:right;cursor:pointer;font-family:inherit;transition:.2s ease}
+    .map-project:hover{background:#fff;box-shadow:0 10px 22px rgba(17,25,63,.1);transform:translateY(-1px)}
+    .map-project strong{display:block;font-size:15px}
+    .map-project span{display:block;color:var(--muted);font-size:12px;margin-top:3px}
+    .pin-marker{width:34px;height:34px;border-radius:50% 50% 50% 8px;background:var(--yellow);border:3px solid var(--navy);box-shadow:0 10px 25px rgba(17,25,63,.28);transform:rotate(-45deg);display:grid;place-items:center}
+    .pin-marker span{transform:rotate(45deg);font-weight:900;color:var(--navy);font-size:12px}
+    .leaflet-popup-content-wrapper{border-radius:16px;box-shadow:0 18px 40px rgba(17,25,63,.22)}
+    .leaflet-popup-content{font-family:'Noto Sans Hebrew','Segoe UI',Arial,sans-serif}
+    .project-dialog{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(17,25,63,.72);z-index:5000;padding:22px}
+    .project-dialog.open{display:flex}
+    .dialog-card{width:min(920px,100%);max-height:92vh;overflow:auto;background:white;border-radius:18px;box-shadow:0 30px 90px rgba(0,0,0,.32);border:1px solid rgba(255,255,255,.35)}
+    .dialog-cover{height:230px;background-size:cover;background-position:center;position:relative}
+    .dialog-cover:after{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(17,25,63,.88),rgba(17,25,63,.25))}
+    .dialog-close{position:absolute;top:16px;left:16px;z-index:1;border:0;background:white;color:var(--navy);width:42px;height:42px;border-radius:50%;font-size:24px;line-height:1;cursor:pointer;box-shadow:0 10px 24px rgba(0,0,0,.18)}
+    .dialog-title{position:absolute;right:24px;bottom:24px;z-index:1;color:white}
+    .dialog-title h3{font-size:34px;line-height:1.1;margin-bottom:8px}
+    .dialog-title span{display:inline-flex;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);border-radius:999px;padding:7px 13px;font-weight:800}
+    .dialog-body{padding:24px}
+    .dialog-body p{color:#4E596D;margin-bottom:18px}
+    .dialog-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+    .dialog-detail{background:#F8FAFC;border:1px solid var(--line);border-radius:14px;padding:14px}
+    .dialog-detail strong{display:block;font-size:16px;color:var(--navy)}
+    .dialog-detail span{font-size:12px;color:var(--muted)}
+    .dialog-actions{display:flex;gap:10px;flex-wrap:wrap}
+    .dialog-actions .btn{min-width:180px}
+    .hidden{display:none!important}
+    .site-footer{width:max-content;max-width:100%;margin:36px auto 0;background:white;color:#6B7280;border:1px solid var(--line);border-radius:999px;padding:10px 22px;box-shadow:0 10px 24px rgba(17,25,63,.09);font-size:14px;font-weight:800}
+    .site-footer strong{color:#5B6FE8}
+    .app-error{display:none;margin:0 auto 18px;max-width:1320px;border:1px solid rgba(224,90,71,.28);background:#FDEDEA;color:#7A2B21;border-radius:14px;padding:12px 16px;font-size:14px;font-weight:800}
+    .app-error.open{display:block}
+    .progress-wrap{margin:10px 0 14px}
+    .progress-header{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:800;color:#596579;margin-bottom:5px}
+    .progress-track{background:#E8EBF1;border-radius:999px;height:9px;overflow:hidden}
+    .progress-fill{height:100%;border-radius:999px;background:var(--green);transition:width .6s ease}
+    .progress-fill.risk-high{background:var(--red)}.progress-fill.risk-med{background:var(--yellow)}
+    .risk-badge{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:4px 10px;font-size:11px;font-weight:800;margin-bottom:8px}
+    .risk-low{background:#E8F8EF;color:#1E7A48}.risk-med{background:#FFF7E2;color:#7A5B1D}.risk-high{background:#FDEDEA;color:#7A2B21}
+    .refresh-bar{display:flex;align-items:center;gap:10px;padding:9px 16px;background:white;border:1px solid var(--line);border-radius:999px;font-size:13px;font-weight:700;color:#596579;margin-bottom:20px;width:fit-content}
+    .refresh-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0}
+    .refresh-dot.loading{animation:rpulse 1s ease infinite;background:var(--yellow)}
+    @keyframes rpulse{0%,100%{opacity:1}50%{opacity:.25}}
+    .refresh-btn{border:0;background:transparent;color:var(--blue);font-weight:900;font-family:inherit;font-size:13px;cursor:pointer;padding:0;margin-right:4px}
+    .refresh-btn:hover{text-decoration:underline}
+    .next-step{background:#F0F4FF;border:1px solid #C7D4F5;border-radius:10px;padding:9px 13px;font-size:12px;font-weight:700;color:#2B3D7A;margin-bottom:12px;display:none}
+    .next-step.visible{display:block}
+    .next-step-label{font-size:10px;color:#5970B7;margin-bottom:2px;font-weight:900}
+    @media(max-width:980px){.map-shell,.projects-grid{grid-template-columns:1fr}.hero{padding:42px 32px}.page{padding:18px}.map-panel{min-height:auto}}
+    @media(max-width:640px){.topbar,.section-head{align-items:flex-start;flex-direction:column}.projects-grid,.dialog-grid{grid-template-columns:1fr}.mini-kpis{grid-template-columns:repeat(3,1fr)}.countdown{grid-template-columns:auto 1fr}.hero{border-radius:22px;padding:38px 24px}.dialog-cover{height:190px}.dialog-title h3{font-size:25px}}
+  </style>
+</head>
+<body>
+  <script>window.__PORTAL_CFG__={scriptUrl:'<?= scriptUrl ?>',clientId:'<?= clientId ?>',tokenId:'<?= tokenId ?>'}</script>
+  <script id="sheet-projects-json" type="application/json"><?!= projectsJson || '[]' ?></script>
+  <div id="appError" class="app-error" role="alert"></div>
+  <main class="page">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-label="MAKOM LTD">
+          <svg class="makom-logo-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 413.82 146.01" role="img" aria-label="MAKOM LTD">
+            <g>
+              <polygon class="makom-logo-yellow" points="100.11 116.51 127.29 146.01 154.47 116.51 154.47 79.1 100.11 79.1 100.11 116.51"></polygon>
+              <path class="makom-logo-white" d="m67.2,79.1V20.18l-23.92,58.92h-5.83L13.65,20.18v58.92H0V1.28h19.25l21.12,52.38L61.6,1.28h19.25v77.82h-13.65Z"></path>
+              <path class="makom-logo-white" d="m222.48,79.1l-26.13-32.78-6.77,7.93v24.85h-13.65V1.28h13.65v37.1L220.03,1.28h16.92l-31.62,36.75,33.95,41.07h-16.8Z"></path>
+              <path class="makom-logo-white" d="m280,0c23.33,0,39.78,17.03,39.78,40.25s-16.45,40.25-39.78,40.25-39.78-17.03-39.78-40.25S256.67,0,280,0Zm0,12.13c-15.75,0-25.78,12.02-25.78,28.12s10.03,28.12,25.78,28.12,25.78-12.13,25.78-28.12-10.15-28.12-25.78-28.12Z"></path>
+              <path class="makom-logo-white" d="m400.17,79.1V20.18l-23.92,58.92h-5.83l-23.8-58.92v58.92h-13.65V1.28h19.25l21.12,52.38L394.57,1.28h19.25v77.82h-13.65Z"></path>
+              <path class="makom-logo-white" d="m136.51,1.28h-17.03l-30.57,77.82h14.94s18.29,0,18.29,0v12.35h11.71v-12.35h33.23S136.51,1.28,136.51,1.28Zm-28.05,65.13l19.53-53.58,19.53,53.58h-39.06Z"></path>
+            </g>
+          </svg>
+        </div>
+        <span>מסך ניהול פרויקטים</span>
+        <img class="client-logo" src="https://assets.fattal.co.il/_fcb5f25e78.png" alt="לוגו פתאל" />
+      </div>
+      <div class="top-actions">
+        <button class="pill" type="button" onclick="scrollToSection('projects')">פרויקטים</button>
+        <button class="pill" type="button" onclick="scrollToSection('map')">מפה</button>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="hero-content">
+        <div>
+          <h1>פורטל בקרת פרויקטים</h1>
+          <p>תמונת מצב מרוכזת למנהלים: סטטוס פרויקטים, יעדי סיום, מיקום, תיעוד וכניסה מהירה לאתרי הניהול.</p>
+        </div>
+      </div>
+      <div class="sheet-status" id="sheetStatus"></div>
+    </section>
+
+    <section id="projects">
+      <div class="section-head">
+        <div>
+          <h2>בחירת פרויקט לניהול</h2>
+          <p>לחיצה על כרטיס פותחת תקציר פרויקט עם פעולות ניהול ותיעוד.</p>
+        </div>
+      </div>
+      <div class="refresh-bar">
+        <span class="refresh-dot" id="refreshDot"></span>
+        <span id="refreshText">טוען נתונים...</span>
+        <button class="refresh-btn" type="button" onclick="manualRefresh()">רענון ידני</button>
+      </div>
+      <div class="filters" id="statusFilters"></div>
+      <div class="projects-grid" id="projectCards"></div>
+    </section>
+
+    <section id="map" style="margin-top:28px">
+      <div class="section-head">
+        <div><h2>מפת פרויקטים</h2><p>מבט מהיר על פריסת הפרויקטים.</p></div>
+      </div>
+      <div class="map-shell">
+        <div class="map-wrap">
+          <div class="map-label">מופעל על ידי <strong>MAKOM LTD</strong></div>
+          <div id="projects-map"></div>
+        </div>
+        <aside class="map-panel">
+          <h3>פרויקטים על המפה</h3>
+          <p>בחירה מהירה בפרויקט ממקדת את המפה.</p>
+          <div class="map-tools">
+            <button class="map-refresh" type="button" onclick="refreshMapView()">רענון מפה</button>
+            <div class="filters" id="mapStatusFilters"></div>
+          </div>
+          <div class="map-list" id="mapProjectList"></div>
+        </aside>
+      </div>
+    </section>
+
+    <footer class="site-footer"><span>מופעל על ידי <strong>MAKOM LTD</strong></span></footer>
+  </main>
+
+  <div class="project-dialog" id="projectDialog" aria-hidden="true">
+    <div class="dialog-card" role="dialog" aria-modal="true" aria-labelledby="dialogProjectName">
+      <div class="dialog-cover" id="dialogCover">
+        <button class="dialog-close" type="button" onclick="closeProjectDialog()" aria-label="סגירה">×</button>
+        <div class="dialog-title">
+          <h3 id="dialogProjectName"></h3>
+          <span id="dialogProjectStatus"></span>
+        </div>
+      </div>
+      <div class="dialog-body">
+        <p id="dialogProjectDesc"></p>
+        <div class="dialog-grid">
+          <div class="dialog-detail"><strong id="dialogLocation"></strong><span>מיקום</span></div>
+          <div class="dialog-detail"><strong id="dialogPlannedEndDate"></strong><span>סיום מתוכנן</span></div>
+          <div class="dialog-detail"><strong id="dialogActualEndDate"></strong><span>סיום בפועל</span></div>
+        </div>
+        <div class="countdown" id="dialogCountdown" data-end-date="">
+          <span class="stopwatch" aria-hidden="true"></span>
+          <span class="countdown-label">נותר עד סיום מתוכנן</span>
+          <strong class="countdown-value">--:--:--</strong>
+        </div>
+        <div class="dialog-actions">
+          <a class="btn" id="dialogSiteLink" href="#" target="_blank" rel="noopener">כניסה לאתר הניהול</a>
+          <button class="btn btn-light" type="button" id="dialogMapButton">הצגה במפה</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    function scrollToSection(id){ const el=document.getElementById(id); if(el) el.scrollIntoView({behavior:'smooth',block:'start'}); }
+
+    const _CFG       = window.__PORTAL_CFG__ || {};
+    const SCRIPT_URL = _CFG.scriptUrl || '';
+    const CLIENT_ID  = _CFG.clientId  || '';
+    const TOKEN_ID   = _CFG.tokenId   || '';
+    const REFRESH_MS = 5 * 60 * 1000;
+
+    const PROJECTS_FROM_SHEET = readProjectsFromTemplate();
+
+    const fallbackProjects = [
+      { client:'fattal', name:'לאונרדו קלאב ים המלח', location:'ים המלח', lat:31.2, lng:35.3667, status:'בביצוע', badge:'סטטוס: בביצוע', plannedEndDate:'2026-12-31', actualEndDate:'', desc:'אתר פרויקט המרכז את סטטוס העבודות, תיעוד מהשטח ומסמכים רלוונטיים.', tags:['אתר פרויקט','מסמכים','עדכונים'], link:'https://sites.google.com/makomltd.com/fattal-dead-sea/', youtubeUrl:'', image:'https://fattal-cms-prod.s3.eu-central-1.amazonaws.com/2_e113a6719b.jpg', progress:45, risk:'בינוני', nextStep:'תיאום עם קבלן ראשי' },
+      { client:'fattal', name:'לאונרדו פלאזה ירושלים', location:'ירושלים', lat:31.7683, lng:35.2137, status:'בביצוע', badge:'סטטוס: בביצוע', plannedEndDate:'2026-10-31', actualEndDate:'', desc:'ריכוז דוחות ביצוע לפי קומות, סטטוס חדרים וצווארי בקבוק.', tags:['אתר פרויקט','מסמכים','עדכונים'], link:'https://sites.google.com/makomltd.com/leonardo-jerusalem-fattal/', youtubeUrl:'', image:'', progress:62, risk:'גבוה', nextStep:'בדיקת איכות שלב ג\'' },
+      { client:'fattal', name:'מלון פלטין תל אביב', location:'תל אביב', lat:32.0853, lng:34.7818, status:'בביצוע', badge:'סטטוס: בביצוע', plannedEndDate:'2027-02-28', actualEndDate:'', desc:'כניסה לאזור הפרויקט לצפייה בעדכונים, קבצים ותמונות.', tags:['אתר פרויקט','מסמכים','עדכונים'], link:'https://sites.google.com/makomltd.com/fattal-palatin', youtubeUrl:'', image:'', progress:28, risk:'נמוך', nextStep:'התחלת שלב ב\'' }
+    ];
+
+    function readProjectsFromTemplate(){
+      const el = document.getElementById('sheet-projects-json');
+      if(!el) return [];
+      const raw = (el.textContent || '').trim();
+      if(!raw || raw.startsWith('<?')) return [];
+      try { const p = JSON.parse(raw); return Array.isArray(p) ? p : []; } catch(e) { return []; }
+    }
+
+    function showAppError(msg){ const el=document.getElementById('appError'); if(el){ el.textContent=msg; el.classList.add('open'); } }
+
+    let projects=[], activeStatusFilter='all', mapStatusFilter='all', map, mapMarkers=[];
+
+    function escapeHTML(v){ return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])); }
+    function isValidLink(v){ return v && v!=='#'; }
+    function openExternalSite(url,e){ if(e){e.preventDefault();e.stopPropagation();} if(!isValidLink(url)) return; const w=window.open(url,'_blank','noopener,noreferrer'); if(!w) window.location.href=url; }
+
+    function pick(row,keys,fallback=''){
+      for(const k of keys) if(row[k]!==undefined && String(row[k]).trim()!=='') return String(row[k]).trim();
+      return fallback;
+    }
+
+    function normalizeProject(row,index){
+      const tags=pick(row,['tags','תגיות'],'אתר פרויקט,מסמכים,עדכונים').split(/[|,،]/).map(t=>t.trim()).filter(Boolean);
+      const name=pick(row,['name','project_name','שם פרויקט'],`פרויקט ${index+1}`);
+      const status=pick(row,['status','סטטוס'],'בביצוע');
+      return {
+        client:pick(row,['client','clientId','client_id','לקוח'],''),
+        name, location:pick(row,['location','מיקום'],''),
+        lat:Number(pick(row,['lat','latitude','קו רוחב'],'')),
+        lng:Number(pick(row,['lng','lon','longitude','קו אורך'],'')),
+        status, badge:pick(row,['badge'],`סטטוס: ${status}`),
+        plannedEndDate:pick(row,['plannedEndDate','planned_end_date','תאריך סיום מתוכנן'],''),
+        actualEndDate:pick(row,['actualEndDate','actual_end_date','תאריך סיום בפועל'],''),
+        desc:pick(row,['desc','description','תיאור'],''),
+        tags, link:pick(row,['link','url','site_url','קישור'],'#'),
+        youtubeUrl:pick(row,['youtubeUrl','youtube_url'],''),
+        image:pick(row,['image','image_url','imageUrl'],'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80'),
+        progress:Math.min(100,Math.max(0,Number(pick(row,['progress','התקדמות'],'0'))||0)),
+        risk:pick(row,['risk','סיכון'],''),
+        nextStep:pick(row,['nextStep','next_step','פעולה הבאה'],'')
+      };
+    }
+
+    function normalizeSheetProject(item,index){
+      return normalizeProject({ project_name:item.project_name, status:item.status, description:item.description, site_url:item.site_url, image_url:item.image_url, location:item.location, lat:item.lat, lng:item.lng, planned_end_date:item.planned_end_date, actual_end_date:item.actual_end_date, tags:item.tags, progress:item.progress, risk:item.risk, next_step:item.next_step }, index);
+    }
+
+    function parseProjectDate(v){
+      if(!v) return null;
+      const c=String(v).trim();
+      const iso=c.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+      const loc=c.match(/^(\d{1,2})[./](\d{1,2})[./](\d{4})$/);
+      if(iso) return new Date(+iso[1],+iso[2]-1,+iso[3],23,59,59);
+      if(loc) return new Date(+loc[3],+loc[2]-1,+loc[1],23,59,59);
+      const p=new Date(c); return isNaN(p.getTime())?null:(p.setHours(23,59,59,999),p);
+    }
+
+    function countdownText(endDate){
+      const t=parseProjectDate(endDate);
+      if(!t) return{label:'תאריך סיום חסר',value:'--:--:--',overdue:false};
+      const diff=t.getTime()-Date.now(), ov=diff<0, a=Math.abs(diff);
+      const days=Math.floor(a/86400000), h=Math.floor((a%86400000)/3600000), m=Math.floor((a%3600000)/60000), s=Math.floor((a%60000)/1000);
+      const clock=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+      return{label:ov?'חריגה מתאריך סיום':'נותר עד תאריך סיום',value:`<span class="countdown-days">${days} ימים</span><span class="countdown-clock">${clock}</span>`,overdue:ov};
+    }
+
+    function updateCountdowns(){ document.querySelectorAll('[data-end-date]').forEach(el=>{ const d=countdownText(el.dataset.endDate); el.classList.toggle('overdue',d.overdue); el.querySelector('.countdown-label').innerText=d.label; el.querySelector('.countdown-value').innerHTML=d.value; }); }
+
+    function riskClass(r){ r=String(r||'').trim(); if(r==='גבוה'||r.toLowerCase()==='high') return 'risk-high'; if(r==='בינוני'||r.toLowerCase()==='medium') return 'risk-med'; return 'risk-low'; }
+    function riskFillClass(r){ r=String(r||'').trim(); if(r==='גבוה'||r.toLowerCase()==='high') return 'risk-high'; if(r==='בינוני'||r.toLowerCase()==='medium') return 'risk-med'; return ''; }
+
+    function cardTemplate(p,i){
+      const se=String(p.plannedEndDate||'').replace(/"/g,'&quot;'), pct=p.progress||0;
+      const rh=p.risk?`<span class="risk-badge ${riskClass(p.risk)}">⬤ סיכון ${escapeHTML(p.risk)}</span>`:'';
+      const nh=p.nextStep?`<div class="next-step visible"><div class="next-step-label">פעולה הבאה</div>${escapeHTML(p.nextStep)}</div>`:'';
+      return `<article class="project-card" onclick="openProject(${i})">
+        <div class="project-image" style="background-image:url('${escapeHTML(p.image)}')">
+          <div class="status-badge">${escapeHTML(p.badge)}</div>
+          <div class="project-status-line">סטטוס: ${escapeHTML(p.status)}</div>
+          <div class="project-title">${escapeHTML(p.name)}</div>
+        </div>
+        <div class="card-body">
+          <div class="project-meta"><span class="meta-dot"></span><span>${escapeHTML(p.location||'מיקום לא הוגדר')}</span></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:8px">
+            <div class="tags" style="margin:0">${p.tags.map(t=>`<span class="tag">${escapeHTML(t)}</span>`).join('')}</div>${rh}
+          </div>
+          <p>${escapeHTML(p.desc)}</p>
+          <div class="progress-wrap">
+            <div class="progress-header"><span>התקדמות</span><span>${pct}%</span></div>
+            <div class="progress-track"><div class="progress-fill ${riskFillClass(p.risk)}" style="width:${pct}%"></div></div>
+          </div>
+          ${nh}
+          <div class="mini-kpis">
+            <div class="mini-kpi"><strong>${escapeHTML(p.location||'-')}</strong><span>מיקום</span></div>
+            <div class="mini-kpi"><strong>${escapeHTML(p.plannedEndDate||'-')}</strong><span>סיום מתוכנן</span></div>
+            <div class="mini-kpi"><strong>${escapeHTML(p.actualEndDate||'-')}</strong><span>סיום בפועל</span></div>
+          </div>
+          <div class="countdown" data-end-date="${se}">
+            <span class="stopwatch" aria-hidden="true"></span>
+            <span class="countdown-label">נותר עד סיום מתוכנן</span>
+            <strong class="countdown-value">--:--:--</strong>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <button class="btn btn-light full" type="button">פרטי הפרויקט</button>
+            <a class="btn full" href="${escapeHTML(p.link)}" target="_blank" rel="noopener" onclick="openExternalSite('${escapeHTML(p.link)}',event)">אתר הניהול</a>
+          </div>
+        </div>
+      </article>`;
+    }
+
+    function renderProjects(){
+      const vis=activeStatusFilter==='all'?projects:projects.filter(p=>p.status===activeStatusFilter);
+      const statuses=[...new Set(projects.map(p=>p.status).filter(Boolean))];
+      document.getElementById('statusFilters').innerHTML=[
+        `<button class="filter-btn ${activeStatusFilter==='all'?'active':''}" type="button" onclick="setStatusFilter('all')">כל הפרויקטים</button>`,
+        ...statuses.map(s=>`<button class="filter-btn ${activeStatusFilter===s?'active':''}" type="button" onclick="setStatusFilter('${escapeHTML(s)}')">${escapeHTML(s)}</button>`)
+      ].join('');
+      document.getElementById('projectCards').innerHTML=projects.length
+        ?(vis.length?vis.map(p=>cardTemplate(p,projects.indexOf(p))).join(''):`<div style="grid-column:1/-1;text-align:center;padding:40px"><h2>אין פרויקטים בסטטוס זה</h2></div>`)
+        :`<div style="grid-column:1/-1;text-align:center;padding:40px"><h2>לא נמצאו פרויקטים</h2></div>`;
+      updateCountdowns();
+      renderMap();
+    }
+
+    function setStatusFilter(s){ activeStatusFilter=s; renderProjects(); }
+
+    function openProject(i){
+      const p=projects[i]; if(!p) return;
+      document.getElementById('dialogProjectName').innerText=p.name;
+      document.getElementById('dialogProjectStatus').innerText=p.status||'-';
+      document.getElementById('dialogProjectDesc').innerText=p.desc||'';
+      document.getElementById('dialogLocation').innerText=p.location||'-';
+      document.getElementById('dialogPlannedEndDate').innerText=p.plannedEndDate||'-';
+      document.getElementById('dialogActualEndDate').innerText=p.actualEndDate||'-';
+      document.getElementById('dialogCover').style.backgroundImage=`url('${p.image}')`;
+      document.getElementById('dialogCountdown').dataset.endDate=p.plannedEndDate||'';
+      const sl=document.getElementById('dialogSiteLink');
+      sl.href=isValidLink(p.link)?p.link:'#';
+      sl.onclick=e=>openExternalSite(p.link,e);
+      sl.classList.toggle('hidden',!isValidLink(p.link));
+      document.getElementById('dialogMapButton').onclick=()=>{ closeProjectDialog(); scrollToSection('map'); setTimeout(()=>focusProjectOnMap(i),350); };
+      document.getElementById('projectDialog').classList.add('open');
+      document.getElementById('projectDialog').setAttribute('aria-hidden','false');
+      document.body.style.overflow='hidden';
+      updateCountdowns();
+    }
+
+    function closeProjectDialog(){ document.getElementById('projectDialog').classList.remove('open'); document.getElementById('projectDialog').setAttribute('aria-hidden','true'); document.body.style.overflow=''; }
+
+    function renderMap(){
+      if(!map){ map=L.map('projects-map',{scrollWheelZoom:false}).setView([31.75,35.05],8); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:18}).addTo(map); }
+      mapMarkers.forEach(m=>m.remove()); mapMarkers=[];
+      const statuses=[...new Set(projects.map(p=>p.status).filter(Boolean))];
+      document.getElementById('mapStatusFilters').innerHTML=[
+        `<button class="filter-btn ${mapStatusFilter==='all'?'active':''}" type="button" onclick="setMapStatusFilter('all')">הכל</button>`,
+        ...statuses.map(s=>`<button class="filter-btn ${mapStatusFilter===s?'active':''}" type="button" onclick="setMapStatusFilter('${escapeHTML(s)}')">${escapeHTML(s)}</button>`)
+      ].join('');
+      const mp=mapStatusFilter==='all'?projects:projects.filter(p=>p.status===mapStatusFilter);
+      const vp=mp.filter(p=>Number.isFinite(p.lat)&&Number.isFinite(p.lng));
+      document.getElementById('mapProjectList').innerHTML=vp.length
+        ?vp.map(p=>`<button class="map-project" type="button" onclick="focusProjectOnMap(${projects.indexOf(p)})"><strong>${escapeHTML(p.name)}</strong><span>${escapeHTML(p.location||'מיקום לא הוגדר')} · מתוכנן ${escapeHTML(p.plannedEndDate||'-')}</span></button>`).join('')
+        :'<p>אין פרויקטים עם קואורדינטות תקינות.</p>';
+      vp.forEach(p=>{ const pi=projects.indexOf(p); const mk=L.marker([p.lat,p.lng],{icon:L.divIcon({className:'',html:`<div class="pin-marker"><span>${pi+1}</span></div>`,iconSize:[34,34],iconAnchor:[17,34],popupAnchor:[0,-30]})}).addTo(map); mk.bindPopup(`<div style="direction:rtl;text-align:right;min-width:210px"><strong>${escapeHTML(p.name)}</strong><br>${escapeHTML(p.location)}<br>סטטוס: ${escapeHTML(p.status)}<br>סיום מתוכנן: ${escapeHTML(p.plannedEndDate||'-')}<br><button onclick="openProject(${pi})" style="margin-top:10px;border:0;background:#11193F;color:white;border-radius:10px;padding:8px 12px;cursor:pointer">פרטי הפרויקט</button></div>`); mapMarkers.push(mk); });
+      if(vp.length){ try{ map.fitBounds(L.latLngBounds(vp.map(p=>[p.lat,p.lng])).pad(.25)); }catch(e){} }
+      setTimeout(()=>map.invalidateSize(),300);
+    }
+
+    function refreshMapView(){ renderMap(); if(map) map.invalidateSize(); }
+    function focusProjectOnMap(index){ const p=projects[index]; const mk=mapMarkers.find(m=>{ const pos=m.getLatLng(); return pos.lat===p.lat&&pos.lng===p.lng; }); if(map&&p&&Number.isFinite(p.lat)&&Number.isFinite(p.lng)){ map.setView([p.lat,p.lng],13,{animate:true}); if(mk) mk.openPopup(); } }
+    function setMapStatusFilter(s){ mapStatusFilter=s; renderMap(); }
+
+    let _rt=null;
+    function setRefreshUI(s,t){ const d=document.getElementById('refreshDot'),x=document.getElementById('refreshText'); if(!d||!x) return; d.className='refresh-dot'+(s==='loading'?' loading':''); x.textContent=t; }
+
+    async function fetchLiveData(){
+      if(!SCRIPT_URL) return false;
+      const parts=[SCRIPT_URL+'?action=data'];
+      if(CLIENT_ID) parts.push('client='+encodeURIComponent(CLIENT_ID));
+      if(TOKEN_ID)  parts.push('token='+encodeURIComponent(TOKEN_ID));
+      const res=await fetch(parts[0]+(parts.length>1?'&'+parts.slice(1).join('&'):''),{cache:'no-store'});
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      const data=await res.json();
+      if(!data.ok) throw new Error(data.error||'שגיאת שרת');
+      return Array.isArray(data.projects)?data.projects:[];
+    }
+
+    function scheduleRefresh(){ clearTimeout(_rt); _rt=setTimeout(async()=>{ try{ const rows=await fetchLiveData(); if(rows){ projects=rows.map(normalizeSheetProject).filter(p=>p.name&&p.link); renderProjects(); setRefreshUI('ok','עודכן: '+new Date().toLocaleTimeString('he-IL')); } }catch(e){ setRefreshUI('ok','רענון אוטומטי נכשל'); } scheduleRefresh(); },REFRESH_MS); }
+
+    async function manualRefresh(){
+      setRefreshUI('loading','מרענן נתונים...');
+      try{ const rows=await fetchLiveData(); if(rows){ projects=rows.map(normalizeSheetProject).filter(p=>p.name&&p.link); renderProjects(); setRefreshUI('ok','עודכן: '+new Date().toLocaleTimeString('he-IL')); } }
+      catch(e){ setRefreshUI('ok','לא הצלחתי לרענן'); }
+    }
+
+    async function loadProjects(){
+      try{
+        if(Array.isArray(PROJECTS_FROM_SHEET)&&PROJECTS_FROM_SHEET.length){ projects=PROJECTS_FROM_SHEET.map(normalizeSheetProject).filter(p=>p.name&&p.link); renderProjects(); setRefreshUI('ok','עודכן: '+new Date().toLocaleTimeString('he-IL')); scheduleRefresh(); return; }
+        if(SCRIPT_URL){ setRefreshUI('loading','טוען נתונים...'); const rows=await fetchLiveData(); if(rows&&rows.length){ projects=rows.map(normalizeSheetProject).filter(p=>p.name&&p.link); renderProjects(); setRefreshUI('ok','עודכן: '+new Date().toLocaleTimeString('he-IL')); scheduleRefresh(); return; } }
+        projects=fallbackProjects; setRefreshUI('ok','נתוני הדגמה (חברו Google Sheet)');
+      }catch(e){ console.error(e); showAppError('לא הצלחתי לטעון נתונים. מוצגים נתוני הדגמה.'); projects=fallbackProjects; setRefreshUI('ok','שגיאה – נתוני הדגמה'); }
+      renderProjects();
+    }
+
+    window.addEventListener('error',e=>showAppError('שגיאה: '+(e.message||'בדקו את פריסת Apps Script')));
+    loadProjects().catch(e=>{ console.error(e); showAppError('שגיאה בטעינה. מוצגים נתוני הדגמה.'); projects=fallbackProjects; renderProjects(); });
+    setInterval(updateCountdowns,1000);
+    document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeProjectDialog(); });
+    document.getElementById('projectDialog').addEventListener('click',e=>{ if(e.target.id==='projectDialog') closeProjectDialog(); });
+  </script>
+</body>
+</html>
