@@ -26,9 +26,11 @@ function doGet(e) {
   // [1] JSON API — לרענון חי מצד הלקוח
   if (params.action === 'data') {
     try {
+      const projects = getProjects_(params);
       return jsonResponse_({
-        ok: true,
-        projects: getProjects_(params),
+        ok: projects.length > 0,
+        projects: projects,
+        client: params.client || '',
         updatedAt: new Date().toISOString()
       });
     } catch (error) {

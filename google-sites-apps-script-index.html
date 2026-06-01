@@ -140,6 +140,23 @@
     .site-footer strong{color:var(--navy)}
     .app-error{display:none;margin:0 auto 18px;max-width:1320px;border:1px solid rgba(224,90,71,.28);background:#FDEDEA;color:#7A2B21;border-radius:14px;padding:12px 16px;font-size:14px;font-weight:800}
     .app-error.open{display:block}
+    .login-screen{display:none;min-height:100vh;padding:28px 16px;background:linear-gradient(180deg,#FFFFFF 0,#F5F6FA 52%,#EEF2F7 100%);place-items:center}
+    .login-card{width:min(520px,100%);background:white;border:1px solid var(--line);border-radius:22px;box-shadow:0 24px 70px rgba(17,25,63,.14);overflow:hidden}
+    .login-head{background:var(--navy);color:white;padding:28px;border-top:6px solid var(--yellow)}
+    .login-head h1{font-size:clamp(34px,5vw,48px);margin:14px 0 8px}
+    .login-head p{color:rgba(255,255,255,.84);font-size:17px}
+    .login-body{padding:24px;display:grid;gap:14px}
+    .login-field{display:grid;gap:7px}
+    .login-field label{font-size:14px;font-weight:900;color:#526078}
+    .login-field input{width:100%;border:1px solid #D8DEE9;border-radius:13px;padding:15px 14px;font:inherit;font-size:18px;color:var(--navy);outline:0;background:#FBFCFE}
+    .login-field input:focus{border-color:var(--yellow);box-shadow:0 0 0 4px rgba(252,177,39,.16);background:white}
+    .login-error{display:none;background:#FDEDEA;color:#8A3328;border:1px solid rgba(224,90,71,.32);border-radius:12px;padding:11px 13px;font-weight:900}
+    .login-error.open{display:block}
+    .login-note{color:#6B7280;font-size:13px;line-height:1.6}
+    body.login-required .page{display:none}
+    body.login-required .login-screen{display:grid}
+    .auth-only{display:none}
+    body.portal-ready .auth-only{display:inline-flex}
     .refresh-bar{display:flex;align-items:center;gap:10px;padding:9px 16px;background:white;border:1px solid var(--line);border-radius:999px;font-size:13px;font-weight:700;color:#596579;margin-bottom:20px;width:fit-content}
     .refresh-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0}
     .refresh-dot.loading{animation:rpulse 1s ease infinite;background:var(--yellow)}
@@ -302,6 +319,39 @@
 <body>
   <div id="portal-template-data" hidden data-config="__CONFIG_DATA__" data-projects="__PROJECTS_DATA__"></div>
   <div id="appError" class="app-error" role="alert"></div>
+  <section class="login-screen" id="loginScreen" aria-label="כניסה לפורטל">
+    <form class="login-card" onsubmit="loginPortal(event)">
+      <div class="login-head">
+        <div class="brand-mark" aria-label="MAKOM LTD">
+          <svg class="makom-logo-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 413.82 146.01" role="img" aria-label="MAKOM LTD">
+            <g>
+              <polygon class="makom-logo-yellow" points="100.11 116.51 127.29 146.01 154.47 116.51 154.47 79.1 100.11 79.1 100.11 116.51"></polygon>
+              <path class="makom-logo-white" d="m67.2,79.1V20.18l-23.92,58.92h-5.83L13.65,20.18v58.92H0V1.28h19.25l21.12,52.38L61.6,1.28h19.25v77.82h-13.65Z"></path>
+              <path class="makom-logo-white" d="m222.48,79.1l-26.13-32.78-6.77,7.93v24.85h-13.65V1.28h13.65v37.1L220.03,1.28h16.92l-31.62,36.75,33.95,41.07h-16.8Z"></path>
+              <path class="makom-logo-white" d="m280,0c23.33,0,39.78,17.03,39.78,40.25s-16.45,40.25-39.78,40.25-39.78-17.03-39.78-40.25S256.67,0,280,0Zm0,12.13c-15.75,0-25.78,12.02-25.78,28.12s10.03,28.12,25.78,28.12,25.78-12.13,25.78-28.12-10.15-28.12-25.78-28.12Z"></path>
+              <path class="makom-logo-white" d="m400.17,79.1V20.18l-23.92,58.92h-5.83l-23.8-58.92v58.92h-13.65V1.28h19.25l21.12,52.38L394.57,1.28h19.25v77.82h-13.65Z"></path>
+              <path class="makom-logo-white" d="m136.51,1.28h-17.03l-30.57,77.82h14.94s18.29,0,18.29,0v12.35h11.71v-12.35h33.23S136.51,1.28,136.51,1.28Zm-28.05,65.13l19.53-53.58,19.53,53.58h-39.06Z"></path>
+            </g>
+          </svg>
+        </div>
+        <h1>כניסה לפורטל</h1>
+        <p>גישה מאובטחת לפרויקטים לפי חברה וקוד גישה.</p>
+      </div>
+      <div class="login-body">
+        <div class="login-error" id="loginError"></div>
+        <div class="login-field">
+          <label for="loginClient">קוד חברה</label>
+          <input id="loginClient" name="client" autocomplete="organization" placeholder="לדוגמה: fattal" />
+        </div>
+        <div class="login-field">
+          <label for="loginToken">קוד גישה</label>
+          <input id="loginToken" name="token" type="password" autocomplete="current-password" placeholder="קוד שקיבלתם מ-MAKOM" />
+        </div>
+        <button class="btn full" id="loginSubmit" type="submit">כניסה</button>
+        <p class="login-note">הקישור הסופי לא חושף טוקן. ההרשאה נשמרת רק בחלון הדפדפן הנוכחי.</p>
+      </div>
+    </form>
+  </section>
   <main class="page">
     <header class="topbar">
       <div class="brand">
@@ -323,6 +373,7 @@
       <div class="top-actions">
         <button class="pill" type="button" onclick="scrollToSection('projects')">פרויקטים</button>
         <button class="pill" type="button" onclick="scrollToSection('map')">מפה</button>
+        <button class="pill auth-only" type="button" onclick="logoutPortal()">יציאה</button>
       </div>
     </header>
 
@@ -416,7 +467,8 @@
 
     function showAppError(msg){ const el=document.getElementById('appError'); if(el){ el.textContent=msg; el.classList.add('open'); } }
 
-    let projects=[], activeStatusFilter='all', mapStatusFilter='all', projectSearchTerm='', map, mapMarkers=[];
+    let projects=[], activeStatusFilter='all', mapStatusFilter='all', projectSearchTerm='', currentClient=CLIENT_ID, currentToken=TOKEN_ID, map, mapMarkers=[];
+    const SESSION_KEY='makomPortalSession';
 
     function escapeHTML(v){ return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])); }
     function isValidLink(v){ return v && v!=='#'; }
@@ -664,17 +716,76 @@
 
     let _rt=null;
     function setRefreshUI(s,t){ const d=document.getElementById('refreshDot'),x=document.getElementById('refreshText'); if(!d||!x) return; d.className='refresh-dot'+(s==='loading'?' loading':''); x.textContent=t; }
+    function setLoginError(msg){ const el=document.getElementById('loginError'); if(el){ el.textContent=msg||''; el.classList.toggle('open',!!msg); } }
+    function setPortalMode(mode){
+      document.body.classList.toggle('login-required',mode==='login');
+      document.body.classList.toggle('portal-ready',mode==='portal');
+    }
+    function readSavedSession(){
+      try{ return JSON.parse(sessionStorage.getItem(SESSION_KEY)||'null'); }catch(e){ return null; }
+    }
+    function saveSession(client,token){
+      try{ sessionStorage.setItem(SESSION_KEY,JSON.stringify({client,token,ts:Date.now()})); }catch(e){}
+    }
+    function clearSession(){
+      try{ sessionStorage.removeItem(SESSION_KEY); }catch(e){}
+    }
+    function prefillLogin(){
+      const c=document.getElementById('loginClient');
+      if(c&&currentClient) c.value=currentClient;
+    }
 
     async function fetchLiveData(){
-      if(!SCRIPT_URL || !CLIENT_ID || !TOKEN_ID) return [];
+      if(!SCRIPT_URL || !currentClient || !currentToken) return [];
       const parts=[SCRIPT_URL+'?action=data'];
-      parts.push('client='+encodeURIComponent(CLIENT_ID));
-      parts.push('token='+encodeURIComponent(TOKEN_ID));
+      parts.push('client='+encodeURIComponent(currentClient));
+      parts.push('token='+encodeURIComponent(currentToken));
       const res=await fetch(parts[0]+(parts.length>1?'&'+parts.slice(1).join('&'):''),{cache:'no-store'});
       if(!res.ok) throw new Error('HTTP '+res.status);
       const data=await res.json();
-      if(!data.ok) throw new Error(data.error||'שגיאת שרת');
+      if(!data.ok) throw new Error(data.error||'פרטי התחברות לא תקינים');
       return Array.isArray(data.projects)?data.projects:[];
+    }
+
+    async function loginPortal(event){
+      if(event) event.preventDefault();
+      const btn=document.getElementById('loginSubmit');
+      const client=String(document.getElementById('loginClient')?.value||'').trim().toLowerCase();
+      const token=String(document.getElementById('loginToken')?.value||'').trim();
+      if(!client||!token){ setLoginError('מלאו קוד חברה וקוד גישה.'); return; }
+      setLoginError('');
+      if(btn){ btn.disabled=true; btn.textContent='בודק גישה...'; }
+      try{
+        currentClient=client; currentToken=token;
+        const rows=await fetchLiveData();
+        projects=rows.map(normalizeSheetProject).filter(p=>p.name&&p.link);
+        if(!projects.length) throw new Error('לא נמצאו פרויקטים לחשבון הזה.');
+        saveSession(client,token);
+        setPortalMode('portal');
+        renderProjects();
+        setRefreshUI('ok','עודכן: '+new Date().toLocaleTimeString('he-IL'));
+        scheduleRefresh();
+      }catch(e){
+        clearSession();
+        projects=[];
+        setPortalMode('login');
+        setLoginError(e.message||'לא הצלחנו להתחבר. בדקו את הקוד ונסו שוב.');
+      }finally{
+        if(btn){ btn.disabled=false; btn.textContent='כניסה'; }
+      }
+    }
+
+    function logoutPortal(){
+      clearSession();
+      clearTimeout(_rt);
+      currentClient=CLIENT_ID||'';
+      currentToken='';
+      projects=[];
+      renderProjects();
+      setPortalMode('login');
+      prefillLogin();
+      const token=document.getElementById('loginToken');
+      if(token){ token.value=''; token.focus(); }
     }
 
     function scheduleRefresh(){ clearTimeout(_rt); _rt=setTimeout(async()=>{ try{ const rows=await fetchLiveData(); if(rows){ projects=rows.map(normalizeSheetProject).filter(p=>p.name&&p.link); renderProjects(); setRefreshUI('ok','עודכן: '+new Date().toLocaleTimeString('he-IL')); } }catch(e){ setRefreshUI('ok','רענון אוטומטי נכשל'); } scheduleRefresh(); },REFRESH_MS); }
@@ -687,10 +798,26 @@
 
     async function loadProjects(){
       try{
-        if(Array.isArray(PROJECTS_FROM_SHEET)&&PROJECTS_FROM_SHEET.length){ projects=PROJECTS_FROM_SHEET.map(normalizeSheetProject).filter(p=>p.name&&p.link); renderProjects(); setRefreshUI('ok','עודכן: '+new Date().toLocaleTimeString('he-IL')); scheduleRefresh(); return; }
-        if(SCRIPT_URL){ setRefreshUI('loading','טוען נתונים...'); const rows=await fetchLiveData(); if(rows&&rows.length){ projects=rows.map(normalizeSheetProject).filter(p=>p.name&&p.link); renderProjects(); setRefreshUI('ok','עודכן: '+new Date().toLocaleTimeString('he-IL')); scheduleRefresh(); return; } }
-        projects=[]; setRefreshUI('ok','אין נתונים להצגה');
-      }catch(e){ console.error(e); showAppError('לא הצלחתי לטעון נתונים.'); projects=[]; setRefreshUI('ok','אין נתונים להצגה'); }
+        prefillLogin();
+        if(Array.isArray(PROJECTS_FROM_SHEET)&&PROJECTS_FROM_SHEET.length){
+          setPortalMode('portal');
+          projects=PROJECTS_FROM_SHEET.map(normalizeSheetProject).filter(p=>p.name&&p.link);
+          renderProjects(); setRefreshUI('ok','עודכן: '+new Date().toLocaleTimeString('he-IL')); scheduleRefresh(); return;
+        }
+        const saved=readSavedSession();
+        if(saved&&saved.client&&saved.token){ currentClient=saved.client; currentToken=saved.token; }
+        if(!currentClient||!currentToken){ setPortalMode('login'); prefillLogin(); return; }
+        if(SCRIPT_URL){
+          setRefreshUI('loading','טוען נתונים...');
+          const rows=await fetchLiveData();
+          if(rows&&rows.length){
+            setPortalMode('portal');
+            projects=rows.map(normalizeSheetProject).filter(p=>p.name&&p.link);
+            renderProjects(); setRefreshUI('ok','עודכן: '+new Date().toLocaleTimeString('he-IL')); scheduleRefresh(); return;
+          }
+        }
+        projects=[]; setPortalMode('login'); setLoginError('לא נמצאו פרויקטים לחשבון הזה.');
+      }catch(e){ console.error(e); clearSession(); setPortalMode('login'); setLoginError('לא הצלחנו לטעון את החשבון. בדקו את קוד הגישה.'); projects=[]; setRefreshUI('ok','אין נתונים להצגה'); }
       renderProjects();
     }
 
